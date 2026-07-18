@@ -299,6 +299,10 @@ function renderServices() {
           Billing: ${RVPS.money(s.amount)} for ${RVPS.CYCLES[s.cycle]} · expires ${RVPS.fmtDate(s.expires)}
         </div>
       </div>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+        <a class="btn btn-ghost btn-sm" href="service.html?service=${s.id}">📄 Detailed Service Invoice</a>
+        <a class="btn btn-ghost btn-sm" href="invoice.html?order=${s.orderId}">🧾 Order Invoice</a>
+      </div>
     </div>`;
   }).join('');
 }

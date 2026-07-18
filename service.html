@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Invoice — Reloaded VPS</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%237c5cff'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>⟳</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .inv-wrap { max-width: 860px; margin: 40px auto 80px; }
+  .inv-paper {
+    background: var(--card-solid); border: 1px solid var(--border); border-radius: 22px;
+    padding: 48px 52px; position: relative; overflow: hidden;
+  }
+  .inv-paper::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: var(--gradient); }
+  .inv-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 36px; }
+  .inv-title { font-family: var(--font-display); font-size: 30px; font-weight: 700; letter-spacing: .02em; }
+  .inv-no { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .inv-meta { text-align: right; font-size: 14px; color: var(--muted); line-height: 1.9; }
+  .inv-meta b { color: var(--text); }
+  .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  @media (max-width: 640px) { .parties { grid-template-columns: 1fr; } .inv-paper { padding: 32px 24px; } }
+  .party { background: rgba(255,255,255,.03); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; font-size: 14px; }
+  .party .p-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
+  .party b { font-size: 15.5px; }
+  .party div { line-height: 1.8; color: var(--muted); }
+  .party b, .party .strong { color: var(--text); }
+  .sec-title { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--accent-2); font-weight: 700; margin: 34px 0 14px; display: flex; align-items: center; gap: 10px; }
+  .sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .spec-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .spec-table td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.05); }
+  .spec-table td:first-child { color: var(--muted); width: 220px; font-size: 12px; text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+  .spec-table td:last-child { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; }
+  .inv-table { width: 100%; border-collapse: collapse; }
+  .inv-table th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .inv-table th:last-child, .inv-table td:last-child { text-align: right; }
+  .inv-table td { padding: 14px; border-bottom: 1px solid rgba(255,255,255,.05); font-size: 14.5px; }
+  .totals { margin-left: auto; width: 280px; margin-top: 12px; font-size: 14.5px; }
+  .totals .trow { display: flex; justify-content: space-between; padding: 7px 14px; color: var(--muted); }
+  .totals .trow.grand { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 13px; font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--text); }
+  .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media (max-width: 640px) { .timeline { grid-template-columns: 1fr 1fr; } }
+  .tl-step { background: rgba(255,255,255,.03); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; text-align: center; }
+  .tl-step .tl-ico { font-size: 20px; }
+  .tl-step .tl-name { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin: 6px 0 2px; }
+  .tl-step .tl-date { font-size: 12.5px; color: var(--muted); }
+  .tl-step.done { border-color: rgba(46,230,168,.35); }
+  .tl-step.done .tl-name { color: var(--green); }
+  .proof-box { background: rgba(46,230,168,.06); border: 1px solid rgba(46,230,168,.28); border-radius: 14px; padding: 18px 22px; }
+  .proof-box .p-title { color: var(--green); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+  .proof-box .small { line-height: 2; }
+  .paid-stamp {
+    position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%) rotate(-14deg);
+    border: 4px solid var(--green); color: var(--green); font-family: var(--font-display);
+    font-weight: 700; font-size: 58px; letter-spacing: .2em; padding: 12px 48px; border-radius: 16px;
+    opacity: .09; text-transform: uppercase; pointer-events: none; white-space: nowrap;
+  }
+  .inv-foot { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; line-height: 1.9; }
+  .inv-actions { display: flex; gap: 12px; justify-content: space-between; flex-wrap: wrap; margin-bottom: 22px; }
+
+  @media print {
+    body { background: #fff !important; color: #111 !important; }
+    body::before, body::after, .nav, .inv-actions, #toast { display: none !important; }
+    .inv-wrap { margin: 0; max-width: 100%; }
+    .inv-paper { background: #fff; border: none; border-radius: 0; padding: 10px 4px; }
+    .inv-paper::before { display: none; }
+    .inv-title { color: #111; }
+    .grad-text { -webkit-text-fill-color: #6a3df5; color: #6a3df5; }
+    .inv-no, .inv-meta, .party div, .totals .trow, .inv-foot, .tl-step .tl-date, .spec-table td:first-child { color: #555 !important; }
+    .inv-meta b, .party b, .party .strong, .totals .trow.grand, .spec-table td:last-child { color: #111 !important; }
+    .party, .tl-step { background: #f7f7fb; border-color: #e3e3ee; }
+    .sec-title { color: #6a3df5; }
+    .sec-title::after, .inv-table th, .spec-table td { border-color: #e3e3ee; }
+    .inv-table th { color: #777; }
+    .inv-table td { color: #222; border-color: #eee; }
+    .badge-green { color: #0a8f5b !important; border-color: #0a8f5b !important; background: transparent !important; }
+    .paid-stamp { color: #0a8f5b !important; border-color: #0a8f5b !important; opacity: .1; }
+    .proof-box { background: #f2fbf7; border-color: #bfe8d6; }
+    .proof-box .p-title, .tl-step.done .tl-name { color: #0a8f5b !important; }
+    .logo, .logo .grad-text { color: #111; }
+    .logo .logo-mark { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo"><span class="logo-mark">⟳</span> Reloaded<span class="grad-text">VPS</span></a>
+    <div class="nav-cta"><a href="#" class="btn btn-ghost btn-sm" id="backLink">← Back</a></div>
+  </div>
+</nav>
+
+<div class="inv-wrap container">
+  <div class="inv-actions">
+    <a href="#" class="btn btn-ghost btn-sm" id="backLink2">← Back to portal</a>
+    <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Print / Save as PDF</button>
+  </div>
+  <div class="inv-paper" id="paper"></div>
+</div>
+
+<script src="assets/js/app.js"></script>
+<script>
+(() => {
+  const user = RVPS.currentUser();
+  if (!user) { location.href = 'login.html'; return; }
+
+  const svcId = new URLSearchParams(location.search).get('service');
+  const s = RVPS.services().find(x => x.id === svcId);
+
+  if (!s || (user.role !== 'admin' && s.userId !== user.id)) {
+    document.getElementById('paper').innerHTML =
+      '<div class="empty" style="border:none;"><div class="big">🔍</div><p>Service invoice not found or you don\'t have access to it.</p></div>';
+    return;
+  }
+
+  const isAdmin = user.role === 'admin';
+  const back = isAdmin ? 'admin.html' : 'dashboard.html#services';
+  document.getElementById('backLink').href = back;
+  document.getElementById('backLink2').href = back;
+
+  const client = RVPS.users().find(u => u.id === s.userId) || { name: 'Client', email: '' };
+  const order = RVPS.orders().find(o => o.id === s.orderId) || {};
+  const p = RVPS.plan(s.planId);
+  const d = s.details;
+  const pr = s.proof;
+  const cycleLabel = RVPS.CYCLES[s.cycle];
+  const perMo = s.amount / s.cycle;
+  const listPrice = p.prices[1] * s.cycle;
+  const discount = listPrice - s.amount;
+
+  document.getElementById('paper').innerHTML = `
+    <div class="paid-stamp">Delivered</div>
+    <div class="inv-top">
+      <div>
+        <div class="inv-title">SERVICE <span class="grad-text">INVOICE</span></div>
+        <div class="inv-no mono">${s.id}${order.invoice ? ' · ' + order.invoice : ''}</div>
+      </div>
+      <div class="inv-meta">
+        <div><b>Issue date:</b> ${RVPS.fmtDate(pr ? pr.at : s.created)}</div>
+        <div><b>Order:</b> <span class="mono">${s.orderId}</span></div>
+        <div><b>Status:</b> <span class="badge badge-green">● Active — Delivered</span></div>
+        <div><b>Expires:</b> ${RVPS.fmtDate(s.expires)}</div>
+      </div>
+    </div>
+
+    <div class="parties">
+      <div class="party">
+        <div class="p-label">Provider</div>
+        <b>Reloaded VPS</b>
+        <div>High-Performance Cloud Infrastructure<br>billing@reloadedvps.com<br>reloadedvps.com</div>
+      </div>
+      <div class="party">
+        <div class="p-label">Client</div>
+        <b>${RVPS.esc(client.name)}</b>
+        <div>${RVPS.esc(client.email)}<br>Client ID: <span class="mono">${client.id || ''}</span></div>
+      </div>
+    </div>
+
+    <div class="sec-title">Service Timeline</div>
+    <div class="timeline">
+      <div class="tl-step done"><div class="tl-ico">🛒</div><div class="tl-name">Ordered</div><div class="tl-date">${RVPS.fmtDateTime(order.created || s.created)}</div></div>
+      <div class="tl-step done"><div class="tl-ico">💳</div><div class="tl-name">Paid</div><div class="tl-date">${RVPS.fmtDateTime(order.created || s.created)}</div></div>
+      <div class="tl-step done"><div class="tl-ico">🚀</div><div class="tl-name">Delivered</div><div class="tl-date">${RVPS.fmtDateTime(pr ? pr.at : s.created)}</div></div>
+      <div class="tl-step"><div class="tl-ico">🔄</div><div class="tl-name">Renews</div><div class="tl-date">${RVPS.fmtDate(s.expires)}</div></div>
+    </div>
+
+    <div class="sec-title">Server Configuration</div>
+    <table class="spec-table">
+      <tr><td>Plan</td><td><b>${p.name} VPS</b> — ${p.tag}</td></tr>
+      <tr><td>Hostname</td><td>${RVPS.esc(d.hostname)}</td></tr>
+      <tr><td>IP Address</td><td>${RVPS.esc(d.ip)}</td></tr>
+      <tr><td>Username</td><td>${RVPS.esc(d.username)}</td></tr>
+      <tr><td>Root Password</td><td>•••••••••••• <span class="muted" style="font-family:var(--font-body);font-size:12px;">(available in the client area)</span></td></tr>
+      <tr><td>Operating System</td><td>${RVPS.esc(d.os)}</td></tr>
+      <tr><td>Datacenter</td><td>${RVPS.esc(d.datacenter)}</td></tr>
+      <tr><td>CPU</td><td>${p.cpu}</td></tr>
+      <tr><td>Memory</td><td>${p.ram}</td></tr>
+      <tr><td>Storage</td><td>${p.disk}</td></tr>
+      <tr><td>Bandwidth</td><td>${p.bw}</td></tr>
+      <tr><td>Network Port</td><td>${p.port}</td></tr>
+      <tr><td>Dedicated IPs</td><td>${p.extra}</td></tr>
+      <tr><td>Control Panel</td><td>${RVPS.esc(d.panelUrl)}</td></tr>
+      <tr><td>DDoS Protection</td><td>Included — always-on</td></tr>
+    </table>
+
+    <div class="sec-title">Billing Summary</div>
+    <table class="inv-table">
+      <thead><tr><th>Description</th><th>Billing Period</th><th>Unit</th><th>Amount</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>${p.name} VPS Plan</b><br><span class="muted small">Service ${s.id}</span></td>
+          <td>${cycleLabel}</td>
+          <td>${RVPS.money(Math.round(perMo * 100) / 100)}/mo</td>
+          <td><b>${RVPS.money(s.amount)}</b></td>
+        </tr>
+        <tr>
+          <td><b>Setup fee</b><br><span class="muted small">Instant provisioning</span></td>
+          <td>—</td><td>—</td>
+          <td><b style="color:var(--green);">FREE</b></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="totals">
+      <div class="trow"><span>Subtotal</span><span>${RVPS.money(listPrice)}</span></div>
+      ${discount > 0 ? `<div class="trow"><span>Cycle discount (${cycleLabel})</span><span style="color:var(--green);">−${RVPS.money(discount)}</span></div>` : ''}
+      <div class="trow"><span>Tax</span><span>$0</span></div>
+      <div class="trow grand"><span>Total paid</span><span class="grad-text">${RVPS.money(s.amount)}</span></div>
+    </div>
+
+    ${pr ? `
+    <div class="sec-title">Proof of Fulfillment</div>
+    <div class="proof-box">
+      <div class="p-title">🧾 ${pr.id}</div>
+      <div class="small muted">
+        Fulfilled by <b style="color:var(--text);">${RVPS.esc(pr.fulfilledBy)}</b> on <b style="color:var(--text);">${RVPS.fmtDateTime(pr.at)}</b> · Method: ${RVPS.esc(pr.method)}<br>
+        Delivered snapshot: <span class="mono">${RVPS.esc(pr.snapshot.hostname)} / ${RVPS.esc(pr.snapshot.ip)} / ${RVPS.esc(pr.snapshot.os)} / ${RVPS.esc(pr.snapshot.dc)}</span>
+      </div>
+    </div>` : ''}
+
+    <div class="inv-foot">
+      <b style="color:var(--text);">This document certifies delivery of the service described above.</b><br>
+      Service <span class="mono">${s.id}</span> was provisioned and handed over on ${RVPS.fmtDate(pr ? pr.at : s.created)}, paid in full (${RVPS.money(s.amount)} / ${cycleLabel}), and remains active until ${RVPS.fmtDate(s.expires)}.<br>
+      Need help with this server? Open a support ticket from your client area — we reply within minutes.
+    </div>`;
+})();
+</script>
+</body>
+</html>
