@@ -198,8 +198,8 @@
     // create the order as PENDING (proforma invoice) — admin confirms payment later
     const order = RVPS.createOrder(u.id, planSel.value, +cycleSel.value, 'pending');
 
-    // open Lava payment page in a new tab
-    const lava = RVPS.LAVA_URL;
+    // open the plan-specific Lava payment page in a new tab
+    const lava = order.lavaUrl || RVPS.lavaLink(order.planId, order.cycle);
     window.open(lava, '_blank', 'noopener');
 
     // show pending confirmation

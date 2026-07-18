@@ -174,7 +174,7 @@ function renderOverview() {
     box.innerHTML = `<h3 class="card-title">⏳ Awaiting payment confirmation</h3>
       <p class="card-sub" style="margin-bottom:16px;">Your order <b class="mono" style="color:var(--accent-2);">${o.id}</b> (${RVPS.plan(o.planId).name} — ${RVPS.CYCLES[o.cycle]}) is created but not yet paid. Complete payment via Lava, then our team verifies it and activates your server.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <a class="btn btn-primary btn-sm" href="${RVPS.LAVA_URL}" target="_blank" rel="noopener">Complete Payment ↗</a>
+        <a class="btn btn-primary btn-sm" href="${o.lavaUrl || RVPS.lavaLink(o.planId, o.cycle)}" target="_blank" rel="noopener">Complete Payment ↗</a>
         <a class="btn btn-ghost btn-sm" href="invoice.html?order=${o.id}">🧾 View Invoice</a>
       </div>`;
   } else if (pending.length) {
@@ -208,7 +208,7 @@ function renderServices() {
       </div>
       <p class="muted small" style="margin:12px 0 14px;">Complete your payment via Lava to activate this server. Once we verify it, your credentials appear here automatically.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <a class="btn btn-primary btn-sm" href="${RVPS.LAVA_URL}" target="_blank" rel="noopener">Complete Payment ↗</a>
+        <a class="btn btn-primary btn-sm" href="${o.lavaUrl || RVPS.lavaLink(o.planId, o.cycle)}" target="_blank" rel="noopener">Complete Payment ↗</a>
         <a class="btn btn-ghost btn-sm" href="invoice.html?order=${o.id}">🧾 View Invoice</a>
       </div>
     </div>`;

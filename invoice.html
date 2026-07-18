@@ -182,7 +182,7 @@
       <div class="small muted" style="line-height:1.9;">
         Please complete payment for this order via <b style="color:var(--text);">Lava</b> (card, Visa, Mastercard or PayPal).
         Once your payment is verified by our team, your server is provisioned and this invoice is marked paid.<br>
-        <a href="${RVPS.LAVA_URL}" target="_blank" rel="noopener" class="btn btn-primary btn-sm" style="margin-top:12px;">Pay Now via Lava ↗</a>
+        <a href="${order.lavaUrl || RVPS.lavaLink(order.planId, order.cycle)}" target="_blank" rel="noopener" class="btn btn-primary btn-sm" style="margin-top:12px;">Pay Now via Lava ↗</a>
       </div>
     </div>` : ''}
 

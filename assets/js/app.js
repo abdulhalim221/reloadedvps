@@ -91,13 +91,34 @@ const RVPS = (() => {
 
   /* ---------- orders & services ---------- */
   const LAVA_URL = 'https://app.lava.top/products/6de18591-699d-4fad-988c-d6781e00b8dc';
+  // Per plan+cycle Lava payment links. Key = `${planId}_${cycle}`.
+  // Anything not listed here falls back to LAVA_URL (the base product page).
+  const LAVA_LINKS = {
+    // ----- 1 month -----
+    'ignite_1':   'https://app.lava.top/products/6de18591-699d-4fad-988c-d6781e00b8dc/3d20b360-3e4d-4c59-b340-a574d79aacfd?currency=USD', // $15
+    'velocity_1': 'https://app.lava.top/products/6de18591-699d-4fad-988c-d6781e00b8dc/85a6ac23-53da-431b-839f-91084aaa45b9?currency=USD', // $25
+    'titan_1':    'https://app.lava.top/products/6de18591-699d-4fad-988c-d6781e00b8dc/c357ddfa-a1be-4412-94f7-9c95d3846d71?currency=USD', // $32
+    // ----- 3 months -----
+    'ignite_3':   'https://app.lava.top/products/38292eb4-c3c6-46f6-9134-ce6dd7f96155/2404a2f7-ddfb-43f2-bc7a-830d8b2a518b?currency=USD', // $40
+    'velocity_3': 'https://app.lava.top/products/38292eb4-c3c6-46f6-9134-ce6dd7f96155/79c31254-23b3-46d7-b4f3-12bd67264f89?currency=USD', // $65
+    'titan_3':    'https://app.lava.top/products/38292eb4-c3c6-46f6-9134-ce6dd7f96155/5b7d441c-422d-4577-8866-1c4260aafa12?currency=USD', // $67
+    // ----- 6 months -----
+    'ignite_6':   'https://app.lava.top/products/c81ccec2-92be-48aa-980f-02fc7f63d0e6/c754631e-f413-4efa-a1e2-55033fea3598?currency=USD', // $70
+    'velocity_6': 'https://app.lava.top/products/c81ccec2-92be-48aa-980f-02fc7f63d0e6/cee3002b-4f59-497d-afeb-fa1f8022b3bb?currency=USD', // $90
+    'titan_6':    'https://app.lava.top/products/c81ccec2-92be-48aa-980f-02fc7f63d0e6/1569fa89-d117-469b-9aaf-b22ead16d8d4?currency=USD', // $100
+    // ----- 1 year -----
+    'ignite_12':  'https://app.lava.top/products/28cd4cc6-fc13-4a42-88dc-5256ef963ae2/1183064d-4930-4955-98d2-4f2e268c6577?currency=USD', // $120
+    'velocity_12':'https://app.lava.top/products/28cd4cc6-fc13-4a42-88dc-5256ef963ae2/fcaae5b3-0748-462d-b136-d9ba628fc7e9?currency=USD', // $140
+    'titan_12':   'https://app.lava.top/products/28cd4cc6-fc13-4a42-88dc-5256ef963ae2/62155767-743d-4fc6-95cb-dc032aad18a1?currency=USD'  // $150
+  };
+  const lavaLink = (planId, cycle) => LAVA_LINKS[`${planId}_${cycle}`] || LAVA_URL;
   function createOrder(userId, planId, cycle, status) {
     const p = plan(planId); if (!p) return null;
     const order = {
       id: uid('ORD-'), userId, planId, cycle: +cycle,
       amount: p.prices[cycle],
       status: status || 'pending',        // pending → paid (admin confirms) → completed (fulfilled)
-      paymentMethod: 'Lava', lavaUrl: LAVA_URL,
+      paymentMethod: 'Lava', lavaUrl: lavaLink(planId, +cycle),
       invoice: uid('INV-'), created: Date.now(), paidAt: null, fulfilled: null
     };
     const orders = get(K.orders, []); orders.unshift(order); set(K.orders, orders);
@@ -199,7 +220,7 @@ const RVPS = (() => {
   seed();
 
   return {
-    PLANS, CYCLES, plan, LAVA_URL,
+    PLANS, CYCLES, plan, LAVA_URL, lavaLink,
     register, login, logout, currentUser, requireAuth,
     createOrder, markOrderPaid, orders, ordersFor, services, servicesFor,
     generateVpsDetails, fulfillOrder,
