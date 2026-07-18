@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Reloaded VPS</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%237c5cff'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>⟳</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <a href="index.html" class="logo"><span class="logo-mark">⟳</span> Reloaded<span class="grad-text">VPS</span></a>
+    <h1>Welcome back</h1>
+    <p class="sub">Log in to manage your servers, billing and tickets.</p>
+    <form id="loginForm">
+      <div class="field">
+        <label>Email address</label>
+        <input class="input" type="email" id="email" placeholder="you@example.com" required autofocus>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input class="input" type="password" id="password" placeholder="••••••••••" required>
+      </div>
+      <div class="form-error" id="err"></div>
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">Log In →</button>
+    </form>
+    <hr class="sep">
+    <p class="muted small" style="text-align:center;">New to Reloaded VPS? <a href="register.html" class="grad-text" style="font-weight:600;">Create an account</a></p>
+  </div>
+</div>
+
+<script src="assets/js/app.js"></script>
+<script>
+document.getElementById('loginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const r = RVPS.login(document.getElementById('email').value, document.getElementById('password').value);
+  const err = document.getElementById('err');
+  if (!r.ok) { err.textContent = r.error; err.style.display = 'block'; return; }
+  const next = new URLSearchParams(location.search).get('next');
+  location.href = r.user.role === 'admin' ? 'admin.html' : (next || 'dashboard.html');
+});
+</script>
+</body>
+</html>

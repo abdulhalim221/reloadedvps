@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Area — Reloaded VPS</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%237c5cff'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>⟳</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .svc-card { margin-bottom: 18px; }
+  .svc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+  .svc-head h3 { font-size: 19px; }
+  .ticket-row { cursor: pointer; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo"><span class="logo-mark">⟳</span> Reloaded<span class="grad-text">VPS</span></a>
+    <div class="nav-cta">
+      <span class="muted small" id="whoami"></span>
+      <a href="index.html#pricing" class="btn btn-primary btn-sm">+ Order New Server</a>
+      <button class="btn btn-ghost btn-sm" onclick="RVPS.logout()">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<div class="portal">
+  <!-- sidebar -->
+  <aside class="sidebar">
+    <div class="side-label">Billing Portal</div>
+    <div class="side-link active" data-view="overview"><span class="icon">📊</span> Overview</div>
+    <div class="side-link" data-view="services"><span class="icon">🖥️</span> My Services</div>
+    <div class="side-link" data-view="orders"><span class="icon">🧾</span> Orders &amp; Invoices</div>
+    <div class="side-link" data-view="tickets"><span class="icon">🎫</span> Support Tickets</div>
+    <div class="side-label">Quick Actions</div>
+    <div class="side-link" onclick="location.href='index.html#pricing'"><span class="icon">➕</span> Order a Server</div>
+    <div class="side-link" onclick="openNewTicket()"><span class="icon">✉️</span> Open a Ticket</div>
+  </aside>
+
+  <!-- main -->
+  <main class="portal-main">
+
+    <!-- ===== OVERVIEW ===== -->
+    <section id="view-overview">
+      <div class="portal-head">
+        <div><h1 id="helloName">Welcome back</h1><p>Here's a snapshot of your account.</p></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-label">Active Services</div><div class="stat-value grad-text" id="stActive">0</div><div class="stat-hint">servers online</div></div>
+        <div class="stat"><div class="stat-label">Pending Setup</div><div class="stat-value" id="stPending">0</div><div class="stat-hint">in provisioning queue</div></div>
+        <div class="stat"><div class="stat-label">Open Tickets</div><div class="stat-value" id="stTickets">0</div><div class="stat-hint">awaiting reply</div></div>
+        <div class="stat"><div class="stat-label">Total Spent</div><div class="stat-value" id="stSpent">$0</div><div class="stat-hint">lifetime</div></div>
+      </div>
+      <div class="card" id="overviewNext"></div>
+    </section>
+
+    <!-- ===== SERVICES ===== -->
+    <section id="view-services" style="display:none;">
+      <div class="portal-head">
+        <div><h1>My Services</h1><p>Your active servers and their credentials.</p></div>
+        <a href="index.html#pricing" class="btn btn-primary btn-sm">+ Order New Server</a>
+      </div>
+      <div id="servicesList"></div>
+    </section>
+
+    <!-- ===== ORDERS ===== -->
+    <section id="view-orders" style="display:none;">
+      <div class="portal-head">
+        <div><h1>Orders &amp; Invoices</h1><p>Your complete billing history.</p></div>
+      </div>
+      <div id="ordersList"></div>
+    </section>
+
+    <!-- ===== TICKETS ===== -->
+    <section id="view-tickets" style="display:none;">
+      <div class="portal-head">
+        <div><h1>Support Tickets</h1><p>Our team typically replies within 15 minutes.</p></div>
+        <button class="btn btn-primary btn-sm" onclick="openNewTicket()">+ Open New Ticket</button>
+      </div>
+      <div id="ticketsList"></div>
+    </section>
+
+    <!-- ===== SINGLE TICKET ===== -->
+    <section id="view-ticket" style="display:none;">
+      <button class="btn btn-ghost btn-sm" onclick="showView('tickets')" style="margin-bottom:20px;">← Back to tickets</button>
+      <div class="card">
+        <div class="flex-between" style="margin-bottom:6px;">
+          <h2 id="tSubject" style="font-size:21px;"></h2>
+          <span id="tStatus"></span>
+        </div>
+        <p class="muted small" id="tMeta" style="margin-bottom:22px;"></p>
+        <div id="tThread"></div>
+        <hr class="sep">
+        <div class="field"><label>Your reply</label><textarea class="input" id="tReply" placeholder="Type your message…"></textarea></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="sendReply()">Send Reply →</button>
+          <button class="btn btn-ghost btn-sm" id="tCloseBtn" onclick="closeTicket()">Mark as Resolved</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- new ticket modal -->
+<div class="modal-overlay" id="ticketModal">
+  <div class="modal">
+    <button class="close-x" onclick="hideModal('ticketModal')">×</button>
+    <h3>Open a <span class="grad-text">Support Ticket</span></h3>
+    <p class="muted small" style="margin-bottom:22px;">Describe your issue and our engineers will get back to you shortly.</p>
+    <div class="field">
+      <label>Related service <span class="muted">(optional)</span></label>
+      <select class="input" id="ntService"></select>
+    </div>
+    <div class="field">
+      <label>Subject</label>
+      <input class="input" id="ntSubject" placeholder="e.g. Cannot connect via SSH">
+    </div>
+    <div class="field">
+      <label>Message</label>
+      <textarea class="input" id="ntBody" placeholder="Tell us what's happening…"></textarea>
+    </div>
+    <div class="form-error" id="ntErr"></div>
+    <button class="btn btn-primary btn-block" onclick="submitTicket()">Submit Ticket →</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="assets/js/app.js"></script>
+<script>
+const user = RVPS.requireAuth('client');
+let currentTicketId = null;
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+function hideModal(id) { document.getElementById(id).classList.remove('show'); }
+
+/* ---------- view switching ---------- */
+function showView(v) {
+  document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
+  document.getElementById('view-' + v).style.display = 'block';
+  document.querySelectorAll('.side-link[data-view]').forEach(l =>
+    l.classList.toggle('active', l.dataset.view === v));
+  if (v === 'overview') renderOverview();
+  if (v === 'services') renderServices();
+  if (v === 'orders') renderOrders();
+  if (v === 'tickets') renderTickets();
+}
+document.querySelectorAll('.side-link[data-view]').forEach(l =>
+  l.addEventListener('click', () => showView(l.dataset.view)));
+
+/* ---------- overview ---------- */
+function renderOverview() {
+  const svcs = RVPS.servicesFor(user.id);
+  const ords = RVPS.ordersFor(user.id);
+  const tkts = RVPS.ticketsFor(user.id);
+  const pending = ords.filter(o => o.status === 'paid');
+  document.getElementById('stActive').textContent = svcs.filter(s => s.status === 'active').length;
+  document.getElementById('stPending').textContent = pending.length;
+  document.getElementById('stTickets').textContent = tkts.filter(t => t.status !== 'closed').length;
+  document.getElementById('stSpent').textContent = RVPS.money(ords.reduce((a, o) => a + o.amount, 0));
+
+  const box = document.getElementById('overviewNext');
+  if (pending.length) {
+    box.innerHTML = `<h3 class="card-title">⏳ Server being provisioned</h3>
+      <p class="card-sub">Your order <b class="mono" style="color:var(--accent-2);">${pending[0].id}</b> (${RVPS.plan(pending[0].planId).name} — ${RVPS.CYCLES[pending[0].cycle]}) is in the setup queue. Credentials will appear under <b>My Services</b> the moment it's ready.</p>`;
+  } else if (svcs.length) {
+    const s = svcs[0];
+    box.innerHTML = `<h3 class="card-title">✅ Everything looks good</h3>
+      <p class="card-sub">Your latest server <b class="mono" style="color:var(--accent-2);">${RVPS.esc(s.details.hostname)}</b> is ${s.status}. Need help? Open a support ticket anytime.</p>`;
+  } else {
+    box.innerHTML = `<h3 class="card-title">🚀 Deploy your first server</h3>
+      <p class="card-sub" style="margin-bottom:18px;">You don't have any services yet. Pick a plan and get root access in minutes.</p>
+      <a href="index.html#pricing" class="btn btn-primary btn-sm">Browse VPS Plans →</a>`;
+  }
+}
+
+/* ---------- services ---------- */
+function renderServices() {
+  const svcs = RVPS.servicesFor(user.id);
+  const pending = RVPS.ordersFor(user.id).filter(o => o.status === 'paid');
+  const box = document.getElementById('servicesList');
+  let html = '';
+
+  pending.forEach(o => {
+    const p = RVPS.plan(o.planId);
+    html += `<div class="card svc-card">
+      <div class="svc-head">
+        <div><h3>${p.name} VPS <span class="badge badge-yellow">⏳ Provisioning</span></h3>
+        <p class="card-sub">Order ${o.id} · ${RVPS.CYCLES[o.cycle]} · Paid ${RVPS.money(o.amount)}</p></div>
+      </div>
+      <p class="muted small" style="margin-top:12px;">Our team is setting up your server. Credentials will appear here automatically.</p>
+    </div>`;
+  });
+
+  svcs.forEach(s => {
+    const p = RVPS.plan(s.planId);
+    const d = s.details;
+    html += `<div class="card svc-card">
+      <div class="svc-head">
+        <div>
+          <h3>${p.name} VPS <span class="badge badge-green">● Active</span></h3>
+          <p class="card-sub mono">${s.id} · ${RVPS.esc(d.datacenter)}</p>
+        </div>
+        <div style="text-align:right;">
+          <div class="small muted">Renews / expires</div>
+          <b>${RVPS.fmtDate(s.expires)}</b>
+        </div>
+      </div>
+      <hr class="sep">
+      <div class="detail-grid">
+        ${detailRow('Hostname', d.hostname)}
+        ${detailRow('IP Address', d.ip)}
+        ${detailRow('Username', d.username)}
+        ${detailRow('Root Password', d.password, true)}
+        ${detailRow('Operating System', d.os)}
+        ${detailRow('Control Panel', d.panelUrl)}
+      </div>
+      <p class="muted small" style="margin-top:16px;">${RVPS.esc(d.specs)} · ${p.bw} · ${p.port}</p>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+        <button class="btn btn-ghost btn-sm" onclick="openNewTicket('${s.id}')">🎫 Get Support for this Server</button>
+      </div>
+    </div>`;
+  });
+
+  box.innerHTML = html || `<div class="empty"><div class="big">🖥️</div><p>No services yet.</p><a href="index.html#pricing" class="btn btn-primary btn-sm" style="margin-top:16px;">Order Your First VPS →</a></div>`;
+}
+function detailRow(label, value, secret = false) {
+  const shown = secret ? '••••••••••••' : RVPS.esc(value);
+  return `<div class="detail-row">
+    <div class="dlabel">${label}</div>
+    <div class="dvalue" data-real="${RVPS.esc(value)}" ${secret ? 'data-secret="1"' : ''}>${shown}</div>
+    <button class="copy-btn" onclick="copyVal(this)">copy</button>
+  </div>`;
+}
+function copyVal(btn) {
+  const el = btn.parentElement.querySelector('.dvalue');
+  navigator.clipboard.writeText(el.dataset.real).then(() => toast('Copied to clipboard ✓'));
+  if (el.dataset.secret) { el.textContent = el.dataset.real; setTimeout(() => el.textContent = '••••••••••••', 4000); }
+}
+
+/* ---------- orders ---------- */
+function renderOrders() {
+  const ords = RVPS.ordersFor(user.id);
+  const box = document.getElementById('ordersList');
+  if (!ords.length) { box.innerHTML = `<div class="empty"><div class="big">🧾</div><p>No orders yet.</p></div>`; return; }
+  box.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Order</th><th>Invoice</th><th>Plan</th><th>Cycle</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+    <tbody>${ords.map(o => `<tr>
+      <td class="mono">${o.id}</td>
+      <td class="mono muted">${o.invoice}</td>
+      <td><b>${RVPS.plan(o.planId).name}</b></td>
+      <td>${RVPS.CYCLES[o.cycle]}</td>
+      <td><b>${RVPS.money(o.amount)}</b></td>
+      <td class="muted">${RVPS.fmtDate(o.created)}</td>
+      <td>${o.status === 'completed' ? '<span class="badge badge-green">Completed</span>' : '<span class="badge badge-yellow">Provisioning</span>'}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ---------- tickets ---------- */
+const statusBadge = s => ({
+  open: '<span class="badge badge-blue">Open</span>',
+  answered: '<span class="badge badge-purple">Answered</span>',
+  closed: '<span class="badge badge-grey">Closed</span>'
+}[s] || s);
+
+function renderTickets() {
+  const tkts = RVPS.ticketsFor(user.id);
+  const box = document.getElementById('ticketsList');
+  if (!tkts.length) { box.innerHTML = `<div class="empty"><div class="big">🎫</div><p>No tickets yet. Need help with anything?</p><button class="btn btn-primary btn-sm" style="margin-top:16px;" onclick="openNewTicket()">Open Your First Ticket →</button></div>`; return; }
+  box.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Ticket</th><th>Subject</th><th>Last Update</th><th>Status</th></tr></thead>
+    <tbody>${tkts.map(t => `<tr class="ticket-row" onclick="openTicketView('${t.id}')">
+      <td class="mono">${t.id}</td>
+      <td><b>${RVPS.esc(t.subject)}</b></td>
+      <td class="muted">${RVPS.fmtDateTime(t.updated)}</td>
+      <td>${statusBadge(t.status)}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function openTicketView(id) {
+  currentTicketId = id;
+  const t = RVPS.tickets().find(x => x.id === id); if (!t) return;
+  document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
+  document.getElementById('view-ticket').style.display = 'block';
+  document.getElementById('tSubject').textContent = t.subject;
+  document.getElementById('tStatus').innerHTML = statusBadge(t.status);
+  document.getElementById('tMeta').textContent = `${t.id} · opened ${RVPS.fmtDateTime(t.created)}${t.serviceId ? ' · service ' + t.serviceId : ''}`;
+  document.getElementById('tThread').innerHTML = t.messages.map(m => `
+    <div class="msg ${m.from}">
+      <div class="avatar">${m.from === 'admin' ? 'R' : RVPS.esc(m.author[0].toUpperCase())}</div>
+      <div class="bubble">
+        <div class="meta"><b>${m.from === 'admin' ? 'Reloaded VPS Support' : RVPS.esc(m.author)}</b> · ${RVPS.fmtDateTime(m.at)}</div>
+        <div class="body">${RVPS.esc(m.body)}</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('tCloseBtn').style.display = t.status === 'closed' ? 'none' : 'inline-flex';
+  document.getElementById('tReply').value = '';
+}
+
+function sendReply() {
+  const body = document.getElementById('tReply').value.trim();
+  if (!body) return toast('Please type a message first.');
+  RVPS.replyTicket(currentTicketId, 'client', user.name, body);
+  openTicketView(currentTicketId);
+  toast('Reply sent ✓');
+}
+function closeTicket() {
+  RVPS.setTicketStatus(currentTicketId, 'closed');
+  openTicketView(currentTicketId);
+  toast('Ticket marked as resolved ✓');
+}
+
+/* ---------- new ticket modal ---------- */
+function openNewTicket(serviceId) {
+  const sel = document.getElementById('ntService');
+  const svcs = RVPS.servicesFor(user.id);
+  sel.innerHTML = '<option value="">— General enquiry —</option>' +
+    svcs.map(s => `<option value="${s.id}" ${s.id === serviceId ? 'selected' : ''}>${RVPS.plan(s.planId).name} — ${RVPS.esc(s.details.hostname)}</option>`).join('');
+  document.getElementById('ntSubject').value = '';
+  document.getElementById('ntBody').value = '';
+  document.getElementById('ntErr').style.display = 'none';
+  document.getElementById('ticketModal').classList.add('show');
+}
+function submitTicket() {
+  const subject = document.getElementById('ntSubject').value.trim();
+  const body = document.getElementById('ntBody').value.trim();
+  const err = document.getElementById('ntErr');
+  if (!subject || !body) { err.textContent = 'Please fill in both subject and message.'; err.style.display = 'block'; return; }
+  RVPS.openTicket(user, subject, body, document.getElementById('ntService').value || null);
+  hideModal('ticketModal');
+  showView('tickets');
+  toast('Ticket submitted — our team has been notified ✓');
+}
+document.getElementById('ticketModal').addEventListener('click', e => { if (e.target.id === 'ticketModal') hideModal('ticketModal'); });
+
+/* ---------- init ---------- */
+if (user) {
+  document.getElementById('whoami').textContent = user.email;
+  document.getElementById('helloName').textContent = `Welcome back, ${user.name.split(' ')[0]} 👋`;
+  const hash = location.hash.replace('#', '');
+  showView(['services', 'orders', 'tickets'].includes(hash) ? hash : 'overview');
+}
+</script>
+</body>
+</html>

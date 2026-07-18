@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reloaded VPS — High-Performance NVMe VPS Hosting</title>
+<meta name="description" content="Deploy blazing-fast NVMe VPS servers in seconds. DDoS protection, 99.9% uptime, 24/7 support. Plans from $15/mo.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%237c5cff'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>⟳</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo"><span class="logo-mark">⟳</span> Reloaded<span class="grad-text">VPS</span></a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-cta" id="navCta">
+      <a href="login.html" class="btn btn-ghost btn-sm">Client Login</a>
+      <a href="register.html" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero container">
+  <span class="chip"><span class="dot"></span> All systems operational — 99.9% uptime</span>
+  <h1>Power Reloaded.<br><span class="grad-text">VPS Hosting Without Limits.</span></h1>
+  <p class="lead">Enterprise-grade NVMe virtual servers deployed in under 60 seconds. Raw performance, military-grade DDoS protection and humans who actually answer tickets.</p>
+  <div class="hero-cta">
+    <a href="#pricing" class="btn btn-primary">Deploy Your Server →</a>
+    <a href="#features" class="btn btn-ghost">Explore Features</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="n grad-text">99.9%</div><div class="l">Uptime SLA</div></div>
+    <div class="hero-stat"><div class="n grad-text">&lt;60s</div><div class="l">Deployment</div></div>
+    <div class="hero-stat"><div class="n grad-text">6</div><div class="l">Global Locations</div></div>
+    <div class="hero-stat"><div class="n grad-text">24/7</div><div class="l">Human Support</div></div>
+  </div>
+</header>
+
+<!-- ===== FEATURES ===== -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="chip">Why Reloaded</span>
+      <h2>Built for speed.<br>Engineered for <span class="grad-text">reliability.</span></h2>
+      <p>Every server runs on latest-gen AMD EPYC hardware with pure NVMe storage. No overselling, no noisy neighbours.</p>
+    </div>
+    <div class="features-grid">
+      <div class="card feature reveal"><div class="f-icon">⚡</div><h3>Pure NVMe Storage</h3><p>Up to 7,000 MB/s read speeds on enterprise NVMe arrays. Your database will thank you.</p></div>
+      <div class="card feature reveal"><div class="f-icon">🛡️</div><h3>DDoS Protection</h3><p>Always-on 3+ Tbps mitigation included free on every plan. Attacks bounce, your app doesn't.</p></div>
+      <div class="card feature reveal"><div class="f-icon">🚀</div><h3>Instant Deployment</h3><p>From checkout to root access in under a minute. Choose your OS and go.</p></div>
+      <div class="card feature reveal"><div class="f-icon">🌍</div><h3>6 Global Locations</h3><p>Frankfurt, Amsterdam, London, New York, Dallas and Singapore. Deploy close to your users.</p></div>
+      <div class="card feature reveal"><div class="f-icon">🔑</div><h3>Full Root Access</h3><p>Your server, your rules. Complete KVM virtualisation with dedicated resources.</p></div>
+      <div class="card feature reveal"><div class="f-icon">🎧</div><h3>24/7 Ticket Support</h3><p>Real engineers on the other end of every ticket. Median first response under 15 minutes.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section class="section" id="pricing" style="padding-top:40px;">
+  <div class="container" style="text-align:center;">
+    <div class="section-head reveal">
+      <span class="chip">Pricing</span>
+      <h2>Simple plans. <span class="grad-text">Serious hardware.</span></h2>
+      <p>Longer billing cycles unlock bigger savings. Every plan includes DDoS protection, a dedicated IPv4 and full root access.</p>
+    </div>
+
+    <div class="cycle-toggle" id="cycleToggle">
+      <button data-cycle="1" class="active">1 Month</button>
+      <button data-cycle="3">3 Months <span class="save-tag">save up to 30%</span></button>
+      <button data-cycle="6">6 Months <span class="save-tag">save up to 48%</span></button>
+      <button data-cycle="12">1 Year <span class="save-tag">save up to 61%</span></button>
+    </div>
+
+    <div class="pricing-grid" id="pricingGrid" style="text-align:left;"></div>
+    <p class="muted small" style="margin-top:26px;">All prices in USD. Instant activation after checkout — no setup fees.</p>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="section" id="how">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="chip">Process</span>
+      <h2>Online in <span class="grad-text">four steps</span></h2>
+    </div>
+    <div class="steps-grid">
+      <div class="card step reveal"><div class="num">01</div><h3>Pick a plan</h3><p>Choose the specs and billing cycle that fit your project.</p></div>
+      <div class="card step reveal"><div class="num">02</div><h3>Create your account</h3><p>Sign up in seconds — you'll get a full client area with billing and support.</p></div>
+      <div class="card step reveal"><div class="num">03</div><h3>Checkout</h3><p>Complete payment and your order lands straight in our provisioning queue.</p></div>
+      <div class="card step reveal"><div class="num">04</div><h3>Get root access</h3><p>Server credentials are delivered to your client area. Log in and build.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="section" id="faq">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="chip">FAQ</span>
+      <h2>Questions, <span class="grad-text">answered.</span></h2>
+    </div>
+    <div class="faq reveal">
+      <details class="faq-item"><summary>How fast is my VPS activated?</summary><div class="faq-body">Orders are provisioned by our team immediately after payment — typically within minutes. Your server credentials appear in your client area and you'll be notified in your dashboard.</div></details>
+      <details class="faq-item"><summary>Which operating systems can I run?</summary><div class="faq-body">Ubuntu, Debian, AlmaLinux, Rocky Linux and Windows Server 2022 are available on all plans. Need something else? Open a ticket and we'll load a custom ISO.</div></details>
+      <details class="faq-item"><summary>Is DDoS protection really included?</summary><div class="faq-body">Yes — every plan ships with always-on volumetric DDoS mitigation at no extra cost. There is no "premium protection" upsell.</div></details>
+      <details class="faq-item"><summary>Can I upgrade my plan later?</summary><div class="faq-body">Absolutely. Open a support ticket from your client area and we'll migrate you to a bigger plan with zero data loss — you only pay the difference.</div></details>
+      <details class="faq-item"><summary>What's your refund policy?</summary><div class="faq-body">We offer a 48-hour money-back guarantee on first orders. If Reloaded VPS isn't for you, open a ticket and we'll refund you, no questions asked.</div></details>
+      <details class="faq-item"><summary>How do I get support?</summary><div class="faq-body">Every client gets access to our 24/7 ticket desk directly inside the client area. Median first response time is under 15 minutes.</div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="section">
+  <div class="container">
+    <div class="cta-band reveal">
+      <h2>Ready to <span class="grad-text">reload</span> your infrastructure?</h2>
+      <p>Deploy a high-performance NVMe VPS in the next 60 seconds.</p>
+      <a href="register.html" class="btn btn-primary" style="position:relative;">Create Free Account →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a href="index.html" class="logo" style="margin-bottom:14px;"><span class="logo-mark">⟳</span> Reloaded<span class="grad-text">VPS</span></a>
+        <p class="muted small" style="max-width:280px;">High-performance NVMe VPS hosting with DDoS protection and 24/7 human support.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <a href="#pricing">VPS Plans</a>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+      </div>
+      <div>
+        <h4>Account</h4>
+        <a href="login.html">Client Login</a>
+        <a href="register.html">Register</a>
+        <a href="dashboard.html">Client Area</a>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <a href="dashboard.html#tickets">Open a Ticket</a>
+        <a href="#faq">FAQ</a>
+        <a href="mailto:support@reloadedvps.com">support@reloadedvps.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Reloaded VPS. All rights reserved.</span>
+      <span>Terms · Privacy · AUP</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<script src="assets/js/app.js"></script>
+<script>
+/* ---- nav swaps to dashboard link when logged in ---- */
+(() => {
+  const u = RVPS.currentUser();
+  if (u) {
+    document.getElementById('navCta').innerHTML =
+      u.role === 'admin'
+        ? '<a href="admin.html" class="btn btn-primary btn-sm">Admin Panel →</a>'
+        : '<a href="dashboard.html" class="btn btn-primary btn-sm">Client Area →</a>';
+  }
+})();
+
+/* ---- pricing renderer ---- */
+let cycle = 1;
+const grid = document.getElementById('pricingGrid');
+
+function renderPricing() {
+  grid.innerHTML = RVPS.PLANS.map(p => {
+    const total = p.prices[cycle];
+    const perMo = total / cycle;
+    const savings = cycle > 1 ? Math.round((1 - perMo / p.prices[1]) * 100) : 0;
+    return `
+    <div class="card price-card ${p.featured ? 'featured' : ''}">
+      ${p.featured ? `<span class="plan-tag">★ ${p.tag}</span>` : ''}
+      <h3>${p.name}</h3>
+      <div class="plan-sub">${p.featured ? 'The sweet spot for most workloads' : p.tag + ' tier'}</div>
+      <div class="price"><span class="amount grad-text">${RVPS.money(total)}</span> <span class="per">/ ${RVPS.CYCLES[cycle].toLowerCase()}</span></div>
+      <div class="cycle-note">${cycle > 1 ? `≈ ${RVPS.money(Math.round(perMo * 100) / 100)}/mo — save ${savings}%` : '&nbsp;'}</div>
+      <ul>
+        <li><span class="tick">✓</span> ${p.cpu}</li>
+        <li><span class="tick">✓</span> ${p.ram}</li>
+        <li><span class="tick">✓</span> ${p.disk}</li>
+        <li><span class="tick">✓</span> ${p.bw}</li>
+        <li><span class="tick">✓</span> ${p.port}</li>
+        <li><span class="tick">✓</span> ${p.extra}</li>
+        <li><span class="tick">✓</span> Free DDoS Protection</li>
+      </ul>
+      <button class="btn ${p.featured ? 'btn-primary' : 'btn-ghost'} btn-block" onclick="order('${p.id}')">Deploy ${p.name} →</button>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('cycleToggle').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#cycleToggle button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  cycle = +b.dataset.cycle;
+  renderPricing();
+});
+
+function order(planId) {
+  const u = RVPS.currentUser();
+  const dest = `checkout.html?plan=${planId}&cycle=${cycle}`;
+  if (!u) location.href = `register.html?next=${encodeURIComponent(dest)}`;
+  else if (u.role === 'admin') location.href = 'admin.html';
+  else location.href = dest;
+}
+renderPricing();
+
+/* ---- scroll reveal ---- */
+const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('visible')), { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

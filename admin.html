@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Reloaded VPS</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%2300e0ff'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%2305060e' font-family='Arial' font-weight='bold'>⟳</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .admin-tag { background: rgba(0,224,255,.1); border: 1px solid rgba(0,224,255,.35); color: var(--accent-2); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 4px 12px; border-radius: 100px; }
+  .gen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 620px) { .gen-grid { grid-template-columns: 1fr; } }
+  .proof-box { background: rgba(46,230,168,.06); border: 1px solid rgba(46,230,168,.28); border-radius: 14px; padding: 16px 20px; margin-top: 14px; }
+  .proof-box .p-title { color: var(--green); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+  .proof-box .small { line-height: 1.9; }
+  .ticket-row { cursor: pointer; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo"><span class="logo-mark" style="background:linear-gradient(135deg,#00e0ff,#7c5cff);">⟳</span> Reloaded<span class="grad-text">VPS</span> <span class="admin-tag">Admin</span></a>
+    <div class="nav-cta">
+      <span class="muted small" id="whoami"></span>
+      <button class="btn btn-ghost btn-sm" onclick="RVPS.logout()">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<div class="portal">
+  <aside class="sidebar">
+    <div class="side-label">Administration</div>
+    <div class="side-link active" data-view="overview"><span class="icon">📊</span> Dashboard</div>
+    <div class="side-link" data-view="orders"><span class="icon">📦</span> Orders <span class="badge badge-yellow" id="ordersBadge" style="display:none;margin-left:auto;">0</span></div>
+    <div class="side-link" data-view="services"><span class="icon">🖥️</span> Services</div>
+    <div class="side-link" data-view="tickets"><span class="icon">🎫</span> Tickets <span class="badge badge-blue" id="ticketsBadge" style="display:none;margin-left:auto;">0</span></div>
+    <div class="side-link" data-view="clients"><span class="icon">👥</span> Clients</div>
+  </aside>
+
+  <main class="portal-main">
+
+    <!-- ===== OVERVIEW ===== -->
+    <section id="view-overview">
+      <div class="portal-head"><div><h1>Admin Dashboard</h1><p>Business at a glance.</p></div></div>
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-label">Revenue</div><div class="stat-value grad-text" id="stRevenue">$0</div><div class="stat-hint">all time</div></div>
+        <div class="stat"><div class="stat-label">Pending Orders</div><div class="stat-value" id="stPending">0</div><div class="stat-hint">awaiting fulfillment</div></div>
+        <div class="stat"><div class="stat-label">Active Services</div><div class="stat-value" id="stServices">0</div><div class="stat-hint">servers delivered</div></div>
+        <div class="stat"><div class="stat-label">Open Tickets</div><div class="stat-value" id="stTickets">0</div><div class="stat-hint">need a reply</div></div>
+        <div class="stat"><div class="stat-label">Clients</div><div class="stat-value" id="stClients">0</div><div class="stat-hint">registered</div></div>
+      </div>
+      <div class="card" id="actionNeeded"></div>
+    </section>
+
+    <!-- ===== ORDERS ===== -->
+    <section id="view-orders" style="display:none;">
+      <div class="portal-head"><div><h1>Orders</h1><p>Paid orders waiting for fulfillment appear at the top.</p></div></div>
+      <div id="ordersArea"></div>
+    </section>
+
+    <!-- ===== SERVICES ===== -->
+    <section id="view-services" style="display:none;">
+      <div class="portal-head"><div><h1>Delivered Services</h1><p>Every provisioned server with its proof of fulfillment.</p></div></div>
+      <div id="servicesArea"></div>
+    </section>
+
+    <!-- ===== TICKETS ===== -->
+    <section id="view-tickets" style="display:none;">
+      <div class="portal-head"><div><h1>Support Tickets</h1><p>Tickets from all clients across the platform.</p></div></div>
+      <div id="ticketsArea"></div>
+    </section>
+
+    <!-- ===== SINGLE TICKET ===== -->
+    <section id="view-ticket" style="display:none;">
+      <button class="btn btn-ghost btn-sm" onclick="showView('tickets')" style="margin-bottom:20px;">← Back to tickets</button>
+      <div class="card">
+        <div class="flex-between" style="margin-bottom:6px;">
+          <h2 id="tSubject" style="font-size:21px;"></h2>
+          <span id="tStatus"></span>
+        </div>
+        <p class="muted small" id="tMeta" style="margin-bottom:22px;"></p>
+        <div id="tThread"></div>
+        <hr class="sep">
+        <div class="field"><label>Reply as Reloaded VPS Support</label><textarea class="input" id="tReply" placeholder="Type your reply to the client…"></textarea></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="adminReply()">Send Reply →</button>
+          <button class="btn btn-danger btn-sm" id="tCloseBtn" onclick="adminClose()">Close Ticket</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CLIENTS ===== -->
+    <section id="view-clients" style="display:none;">
+      <div class="portal-head"><div><h1>Clients</h1><p>All registered accounts.</p></div></div>
+      <div id="clientsArea"></div>
+    </section>
+  </main>
+</div>
+
+<!-- fulfill modal -->
+<div class="modal-overlay" id="fulfillModal">
+  <div class="modal">
+    <button class="close-x" onclick="hideModal('fulfillModal')">×</button>
+    <h3>Fulfill Order <span class="grad-text mono" id="fOrderId" style="font-size:16px;"></span></h3>
+    <p class="muted small" style="margin-bottom:18px;" id="fOrderMeta"></p>
+    <button class="btn btn-ghost btn-block" onclick="regen()" style="margin-bottom:18px;">🎲 Generate Random VPS Details</button>
+    <div class="gen-grid">
+      <div class="field"><label>Hostname</label><input class="input mono" id="fHostname"></div>
+      <div class="field"><label>IP Address</label><input class="input mono" id="fIp"></div>
+      <div class="field"><label>Username</label><input class="input mono" id="fUser"></div>
+      <div class="field"><label>Root Password</label><input class="input mono" id="fPass"></div>
+      <div class="field"><label>Operating System</label><select class="input" id="fOs"></select></div>
+      <div class="field"><label>Datacenter</label><select class="input" id="fDc"></select></div>
+    </div>
+    <div class="form-error" id="fErr"></div>
+    <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="confirmFulfill()">✅ Deliver to Client &amp; Record Proof</button>
+    <p class="muted small" style="text-align:center;margin-top:12px;">A proof-of-fulfillment record (who, when, what) is stored and the service instantly appears in the client's area.</p>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="assets/js/app.js"></script>
+<script>
+const admin = RVPS.requireAuth('admin');
+let currentTicketId = null, fulfillingOrderId = null;
+
+const OSES = ['Ubuntu 24.04 LTS', 'Debian 12', 'AlmaLinux 9', 'Rocky Linux 9', 'Windows Server 2022'];
+const DCS = ['Frankfurt, DE — FRA1', 'Amsterdam, NL — AMS2', 'London, UK — LON1', 'New York, US — NYC3', 'Dallas, US — DAL1', 'Singapore, SG — SIN1'];
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+function hideModal(id) { document.getElementById(id).classList.remove('show'); }
+const userById = id => RVPS.users().find(u => u.id === id);
+const statusBadge = s => ({
+  open: '<span class="badge badge-blue">Open — needs reply</span>',
+  answered: '<span class="badge badge-purple">Answered</span>',
+  closed: '<span class="badge badge-grey">Closed</span>'
+}[s] || s);
+
+/* ---------- views ---------- */
+function showView(v) {
+  document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
+  document.getElementById('view-' + v).style.display = 'block';
+  document.querySelectorAll('.side-link[data-view]').forEach(l =>
+    l.classList.toggle('active', l.dataset.view === v));
+  ({ overview: renderOverview, orders: renderOrders, services: renderServices, tickets: renderTickets, clients: renderClients }[v] || (() => {}))();
+  refreshBadges();
+}
+document.querySelectorAll('.side-link[data-view]').forEach(l =>
+  l.addEventListener('click', () => showView(l.dataset.view)));
+
+function refreshBadges() {
+  const pending = RVPS.orders().filter(o => o.status === 'paid').length;
+  const open = RVPS.tickets().filter(t => t.status === 'open').length;
+  const ob = document.getElementById('ordersBadge'), tb = document.getElementById('ticketsBadge');
+  ob.style.display = pending ? 'inline-block' : 'none'; ob.textContent = pending;
+  tb.style.display = open ? 'inline-block' : 'none'; tb.textContent = open;
+}
+
+/* ---------- overview ---------- */
+function renderOverview() {
+  const ords = RVPS.orders(), svcs = RVPS.services(), tkts = RVPS.tickets();
+  const clients = RVPS.users().filter(u => u.role === 'client');
+  const pending = ords.filter(o => o.status === 'paid');
+  const openT = tkts.filter(t => t.status === 'open');
+  document.getElementById('stRevenue').textContent = RVPS.money(ords.reduce((a, o) => a + o.amount, 0));
+  document.getElementById('stPending').textContent = pending.length;
+  document.getElementById('stServices').textContent = svcs.length;
+  document.getElementById('stTickets').textContent = openT.length;
+  document.getElementById('stClients').textContent = clients.length;
+
+  const box = document.getElementById('actionNeeded');
+  let html = '<h3 class="card-title">Action needed</h3>';
+  if (!pending.length && !openT.length) {
+    html += '<p class="card-sub">🎉 All clear — no pending orders and no unanswered tickets.</p>';
+  } else {
+    html += '<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px;">';
+    pending.forEach(o => {
+      const u = userById(o.userId);
+      html += `<div class="flex-between" style="background:rgba(255,200,87,.06);border:1px solid rgba(255,200,87,.25);border-radius:12px;padding:13px 18px;">
+        <span class="small">📦 <b>${o.id}</b> — ${RVPS.plan(o.planId).name} (${RVPS.CYCLES[o.cycle]}) · ${u ? RVPS.esc(u.name) : '?'} · <b>${RVPS.money(o.amount)}</b></span>
+        <button class="btn btn-primary btn-sm" onclick="openFulfill('${o.id}')">Fulfill Now →</button></div>`;
+    });
+    openT.forEach(t => {
+      html += `<div class="flex-between" style="background:rgba(0,224,255,.05);border:1px solid rgba(0,224,255,.22);border-radius:12px;padding:13px 18px;">
+        <span class="small">🎫 <b>${t.id}</b> — ${RVPS.esc(t.subject)} · ${RVPS.esc(t.userName)}</span>
+        <button class="btn btn-ghost btn-sm" onclick="openTicketView('${t.id}')">Reply →</button></div>`;
+    });
+    html += '</div>';
+  }
+  box.innerHTML = html;
+}
+
+/* ---------- orders ---------- */
+function renderOrders() {
+  const ords = RVPS.orders();
+  const box = document.getElementById('ordersArea');
+  if (!ords.length) { box.innerHTML = '<div class="empty"><div class="big">📦</div><p>No orders yet. They\'ll appear here the moment a client checks out.</p></div>'; return; }
+  box.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Order</th><th>Client</th><th>Plan</th><th>Cycle</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead>
+    <tbody>${ords.map(o => {
+      const u = userById(o.userId);
+      return `<tr>
+        <td class="mono">${o.id}</td>
+        <td><b>${u ? RVPS.esc(u.name) : '?'}</b><br><span class="muted small">${u ? RVPS.esc(u.email) : ''}</span></td>
+        <td>${RVPS.plan(o.planId).name}</td>
+        <td>${RVPS.CYCLES[o.cycle]}</td>
+        <td><b>${RVPS.money(o.amount)}</b></td>
+        <td class="muted">${RVPS.fmtDate(o.created)}</td>
+        <td>${o.status === 'completed' ? '<span class="badge badge-green">Fulfilled</span>' : '<span class="badge badge-yellow">Awaiting fulfillment</span>'}</td>
+        <td>${o.status === 'paid' ? `<button class="btn btn-primary btn-sm" onclick="openFulfill('${o.id}')">Fulfill →</button>` : ''}</td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+/* ---------- fulfill flow ---------- */
+function openFulfill(orderId) {
+  fulfillingOrderId = orderId;
+  const o = RVPS.orders().find(x => x.id === orderId); if (!o) return;
+  const u = userById(o.userId);
+  document.getElementById('fOrderId').textContent = o.id;
+  document.getElementById('fOrderMeta').textContent =
+    `${RVPS.plan(o.planId).name} · ${RVPS.CYCLES[o.cycle]} · ${RVPS.money(o.amount)} — for ${u ? u.name + ' (' + u.email + ')' : 'unknown client'}`;
+  document.getElementById('fOs').innerHTML = OSES.map(x => `<option>${x}</option>`).join('');
+  document.getElementById('fDc').innerHTML = DCS.map(x => `<option>${x}</option>`).join('');
+  regen();
+  document.getElementById('fErr').style.display = 'none';
+  document.getElementById('fulfillModal').classList.add('show');
+}
+function regen() {
+  const o = RVPS.orders().find(x => x.id === fulfillingOrderId);
+  const d = RVPS.generateVpsDetails(o ? o.planId : 'velocity');
+  document.getElementById('fHostname').value = d.hostname;
+  document.getElementById('fIp').value = d.ip;
+  document.getElementById('fUser').value = d.username;
+  document.getElementById('fPass').value = d.password;
+  document.getElementById('fOs').value = d.os;
+  document.getElementById('fDc').value = d.datacenter;
+}
+function confirmFulfill() {
+  const o = RVPS.orders().find(x => x.id === fulfillingOrderId); if (!o) return;
+  const p = RVPS.plan(o.planId);
+  const details = {
+    hostname: document.getElementById('fHostname').value.trim(),
+    ip: document.getElementById('fIp').value.trim(),
+    username: document.getElementById('fUser').value.trim() || 'root',
+    password: document.getElementById('fPass').value.trim(),
+    os: document.getElementById('fOs').value,
+    datacenter: document.getElementById('fDc').value,
+    panelUrl: 'https://panel.reloadedvps.com',
+    specs: `${p.cpu} • ${p.ram} • ${p.disk}`
+  };
+  const err = document.getElementById('fErr');
+  if (!details.hostname || !details.ip || !details.password) {
+    err.textContent = 'Hostname, IP and password are required.'; err.style.display = 'block'; return;
+  }
+  RVPS.fulfillOrder(o.id, details, admin);
+  hideModal('fulfillModal');
+  toast(`✅ ${o.id} fulfilled — service delivered to client`);
+  showView('orders');
+}
+
+/* ---------- services + proof of fulfillment ---------- */
+function renderServices() {
+  const svcs = RVPS.services();
+  const box = document.getElementById('servicesArea');
+  if (!svcs.length) { box.innerHTML = '<div class="empty"><div class="big">🖥️</div><p>No services delivered yet. Fulfill a paid order to create one.</p></div>'; return; }
+  box.innerHTML = svcs.map(s => {
+    const u = userById(s.userId), p = RVPS.plan(s.planId), d = s.details, pr = s.proof;
+    return `<div class="card" style="margin-bottom:18px;">
+      <div class="flex-between">
+        <div>
+          <h3 style="font-size:18px;">${p.name} VPS <span class="badge badge-green">● Active</span></h3>
+          <p class="card-sub mono">${s.id} · order ${s.orderId}</p>
+        </div>
+        <div style="text-align:right;" class="small">
+          <div class="muted">Client</div><b>${u ? RVPS.esc(u.name) : '?'}</b><br><span class="muted">${u ? RVPS.esc(u.email) : ''}</span>
+        </div>
+      </div>
+      <hr class="sep">
+      <div class="detail-grid">
+        <div class="detail-row"><div class="dlabel">Hostname</div><div class="dvalue">${RVPS.esc(d.hostname)}</div></div>
+        <div class="detail-row"><div class="dlabel">IP Address</div><div class="dvalue">${RVPS.esc(d.ip)}</div></div>
+        <div class="detail-row"><div class="dlabel">OS</div><div class="dvalue">${RVPS.esc(d.os)}</div></div>
+        <div class="detail-row"><div class="dlabel">Datacenter</div><div class="dvalue">${RVPS.esc(d.datacenter)}</div></div>
+      </div>
+      <div class="proof-box">
+        <div class="p-title">🧾 Proof of Fulfillment — ${pr.id}</div>
+        <div class="small muted">
+          Fulfilled by <b style="color:var(--text);">${RVPS.esc(pr.fulfilledBy)}</b> on <b style="color:var(--text);">${RVPS.fmtDateTime(pr.at)}</b> · Method: ${RVPS.esc(pr.method)}<br>
+          Delivered snapshot: <span class="mono">${RVPS.esc(pr.snapshot.hostname)} / ${RVPS.esc(pr.snapshot.ip)} / ${RVPS.esc(pr.snapshot.os)} / ${RVPS.esc(pr.snapshot.dc)}</span><br>
+          Billing: ${RVPS.money(s.amount)} for ${RVPS.CYCLES[s.cycle]} · expires ${RVPS.fmtDate(s.expires)}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- tickets ---------- */
+function renderTickets() {
+  const tkts = RVPS.tickets();
+  const box = document.getElementById('ticketsArea');
+  if (!tkts.length) { box.innerHTML = '<div class="empty"><div class="big">🎫</div><p>No tickets yet — client tickets will land here in real time.</p></div>'; return; }
+  box.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Ticket</th><th>Client</th><th>Subject</th><th>Last Update</th><th>Status</th></tr></thead>
+    <tbody>${tkts.map(t => `<tr class="ticket-row" onclick="openTicketView('${t.id}')">
+      <td class="mono">${t.id}</td>
+      <td><b>${RVPS.esc(t.userName)}</b><br><span class="muted small">${RVPS.esc(t.userEmail)}</span></td>
+      <td><b>${RVPS.esc(t.subject)}</b>${t.serviceId ? `<br><span class="muted small mono">${t.serviceId}</span>` : ''}</td>
+      <td class="muted">${RVPS.fmtDateTime(t.updated)}</td>
+      <td>${statusBadge(t.status)}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+function openTicketView(id) {
+  currentTicketId = id;
+  const t = RVPS.tickets().find(x => x.id === id); if (!t) return;
+  document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
+  document.getElementById('view-ticket').style.display = 'block';
+  document.getElementById('tSubject').textContent = t.subject;
+  document.getElementById('tStatus').innerHTML = statusBadge(t.status);
+  document.getElementById('tMeta').textContent =
+    `${t.id} · ${t.userName} <${t.userEmail}> · opened ${RVPS.fmtDateTime(t.created)}${t.serviceId ? ' · service ' + t.serviceId : ''}`;
+  document.getElementById('tThread').innerHTML = t.messages.map(m => `
+    <div class="msg ${m.from}">
+      <div class="avatar">${m.from === 'admin' ? 'R' : RVPS.esc(m.author[0].toUpperCase())}</div>
+      <div class="bubble">
+        <div class="meta"><b>${m.from === 'admin' ? 'Reloaded VPS Support (you)' : RVPS.esc(m.author)}</b> · ${RVPS.fmtDateTime(m.at)}</div>
+        <div class="body">${RVPS.esc(m.body)}</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('tCloseBtn').style.display = t.status === 'closed' ? 'none' : 'inline-flex';
+  document.getElementById('tReply').value = '';
+}
+function adminReply() {
+  const body = document.getElementById('tReply').value.trim();
+  if (!body) return toast('Type a reply first.');
+  RVPS.replyTicket(currentTicketId, 'admin', admin.name, body);
+  openTicketView(currentTicketId);
+  refreshBadges();
+  toast('Reply sent to client ✓');
+}
+function adminClose() {
+  RVPS.setTicketStatus(currentTicketId, 'closed');
+  openTicketView(currentTicketId);
+  refreshBadges();
+  toast('Ticket closed ✓');
+}
+
+/* ---------- clients ---------- */
+function renderClients() {
+  const clients = RVPS.users().filter(u => u.role === 'client');
+  const box = document.getElementById('clientsArea');
+  if (!clients.length) { box.innerHTML = '<div class="empty"><div class="big">👥</div><p>No client accounts yet.</p></div>'; return; }
+  box.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Client</th><th>Email</th><th>Joined</th><th>Services</th><th>Orders</th><th>Spent</th></tr></thead>
+    <tbody>${clients.map(u => {
+      const ords = RVPS.ordersFor(u.id);
+      return `<tr>
+        <td><b>${RVPS.esc(u.name)}</b></td>
+        <td class="muted">${RVPS.esc(u.email)}</td>
+        <td class="muted">${RVPS.fmtDate(u.created)}</td>
+        <td>${RVPS.servicesFor(u.id).length}</td>
+        <td>${ords.length}</td>
+        <td><b>${RVPS.money(ords.reduce((a, o) => a + o.amount, 0))}</b></td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+document.getElementById('fulfillModal').addEventListener('click', e => { if (e.target.id === 'fulfillModal') hideModal('fulfillModal'); });
+
+/* ---------- init ---------- */
+if (admin) {
+  document.getElementById('whoami').textContent = admin.email;
+  showView('overview');
+}
+</script>
+</body>
+</html>
