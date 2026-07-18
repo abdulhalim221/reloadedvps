@@ -118,13 +118,13 @@ const RVPS = (() => {
   function generateVpsDetails(planId) {
     const p = plan(planId);
     return {
-      hostname: `node-${Math.floor(1000 + Math.random() * 9000)}.reloadedvps.com`,
+      hostname: `node-${Math.floor(1000 + Math.random() * 9000)}.reloadedvps.store`,
       ip: rndIP(),
       username: 'root',
       password: rndPass(),
       os: rnd(OSES),
       datacenter: rnd(DCS),
-      panelUrl: 'https://panel.reloadedvps.com',
+      panelUrl: 'https://panel.reloadedvps.store',
       specs: p ? `${p.cpu} • ${p.ram} • ${p.disk}` : ''
     };
   }
