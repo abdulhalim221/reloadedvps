@@ -215,7 +215,7 @@ function renderOrders() {
         <td><b>${RVPS.money(o.amount)}</b></td>
         <td class="muted">${RVPS.fmtDate(o.created)}</td>
         <td>${o.status === 'completed' ? '<span class="badge badge-green">Fulfilled</span>' : '<span class="badge badge-yellow">Awaiting fulfillment</span>'}</td>
-        <td>${o.status === 'paid' ? `<button class="btn btn-primary btn-sm" onclick="openFulfill('${o.id}')">Fulfill →</button>` : ''}</td>
+        <td style="white-space:nowrap;">${o.status === 'paid' ? `<button class="btn btn-primary btn-sm" onclick="openFulfill('${o.id}')">Fulfill →</button> ` : ''}<a class="btn btn-ghost btn-sm" href="invoice.html?order=${o.id}">🧾</a></td>
       </tr>`;
     }).join('')}</tbody></table></div>`;
 }

@@ -85,6 +85,7 @@
     <p class="muted" style="max-width:460px;margin:0 auto 30px;">Your server credentials will appear in your client area as soon as our team completes setup — usually within minutes.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
       <a href="dashboard.html" class="btn btn-primary">Go to Client Area →</a>
+      <a href="#" class="btn btn-ghost" id="okInvoiceLink">🧾 View Invoice</a>
       <a href="index.html#pricing" class="btn btn-ghost">Order Another Server</a>
     </div>
   </div>
@@ -135,6 +136,7 @@ if (user) {
     setTimeout(() => {
       const order = RVPS.createOrder(user.id, planSel.value, +cycleSel.value);
       document.getElementById('okOrderId').textContent = order.id;
+      document.getElementById('okInvoiceLink').href = 'invoice.html?order=' + order.id;
       document.getElementById('checkoutView').style.display = 'none';
       document.getElementById('successView').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });

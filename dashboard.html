@@ -252,7 +252,7 @@ function renderOrders() {
   const box = document.getElementById('ordersList');
   if (!ords.length) { box.innerHTML = `<div class="empty"><div class="big">🧾</div><p>No orders yet.</p></div>`; return; }
   box.innerHTML = `<div class="table-wrap"><table>
-    <thead><tr><th>Order</th><th>Invoice</th><th>Plan</th><th>Cycle</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+    <thead><tr><th>Order</th><th>Invoice</th><th>Plan</th><th>Cycle</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead>
     <tbody>${ords.map(o => `<tr>
       <td class="mono">${o.id}</td>
       <td class="mono muted">${o.invoice}</td>
@@ -261,6 +261,7 @@ function renderOrders() {
       <td><b>${RVPS.money(o.amount)}</b></td>
       <td class="muted">${RVPS.fmtDate(o.created)}</td>
       <td>${o.status === 'completed' ? '<span class="badge badge-green">Completed</span>' : '<span class="badge badge-yellow">Provisioning</span>'}</td>
+      <td><a class="btn btn-ghost btn-sm" href="invoice.html?order=${o.id}">🧾 Invoice</a></td>
     </tr>`).join('')}</tbody></table></div>`;
 }
 
