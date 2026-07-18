@@ -221,9 +221,8 @@ document.getElementById('cycleToggle').addEventListener('click', e => {
 function order(planId) {
   const u = RVPS.currentUser();
   const dest = `checkout.html?plan=${planId}&cycle=${cycle}`;
-  if (!u) location.href = `register.html?next=${encodeURIComponent(dest)}`;
-  else if (u.role === 'admin') location.href = 'admin.html';
-  else location.href = dest;
+  if (u && u.role === 'admin') location.href = 'admin.html';
+  else location.href = dest;   // checkout handles signup inline for guests
 }
 renderPricing();
 

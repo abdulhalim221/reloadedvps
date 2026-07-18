@@ -24,12 +24,15 @@ A complete, self-contained VPS hosting business website — pure HTML/CSS/JS, no
 
 ## The full business flow
 
-1. Visitor picks a plan and billing cycle → registers → checks out (payment is simulated).
-2. The order appears in the client area as **Provisioning** and in the admin panel as **Awaiting fulfillment**.
-3. Admin clicks **Fulfill** → 🎲 generates random VPS details (hostname, IP, root password, OS, datacenter) — editable before delivery.
-4. On delivery a **Proof of Fulfillment** record (`POF-…`) is stored: who fulfilled it, when, and a snapshot of exactly what was delivered.
-5. The service instantly appears in the client area with copy-to-clipboard credentials.
-6. Clients open **support tickets** (optionally linked to a service); admins reply from the ticket inbox; the conversation threads in both portals.
+1. Visitor picks a plan and billing cycle → checkout page (signup happens inline: name, email, password).
+2. Client clicks **Pay Securely with Lava** → a Lava payment page opens, and the order is created as **Awaiting payment** (a proforma invoice).
+3. Admin verifies the payment in the Lava dashboard, then clicks **Mark as Paid** in the admin panel — the order moves to the fulfillment queue and counts toward revenue.
+4. Admin clicks **Fulfill** → 🎲 generates random VPS details (hostname, IP, root password, OS, datacenter) — editable before delivery.
+5. On delivery a **Proof of Fulfillment** record (`POF-…`) is stored: who fulfilled it, when, and a snapshot of exactly what was delivered.
+6. The service instantly appears in the client area with copy-to-clipboard credentials, and the invoice switches from proforma to **Paid**.
+7. Clients open **support tickets** (optionally linked to a service); admins reply from the ticket inbox; the conversation threads in both portals.
+
+**Payment link:** the Lava product URL is set in `assets/js/app.js` as `LAVA_URL`. Change it there to point at a different Lava product.
 
 ## Default admin account
 

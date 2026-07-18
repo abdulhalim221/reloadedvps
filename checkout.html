@@ -14,12 +14,22 @@
   .summary-row { display: flex; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.05); font-size: 14.5px; }
   .summary-row:last-child { border: none; }
   .summary-row.total { font-family: var(--font-display); font-size: 19px; font-weight: 700; padding-top: 16px; }
-  .pay-option { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border: 1px solid var(--border); border-radius: 14px; cursor: pointer; transition: all .2s; margin-bottom: 12px; background: rgba(255,255,255,.03); }
-  .pay-option:hover, .pay-option.selected { border-color: var(--border-hi); background: var(--gradient-soft); }
-  .pay-option .p-icon { font-size: 22px; }
   .success-panel { text-align: center; padding: 50px 30px; display: none; }
-  .success-panel .big-tick { width: 84px; height: 84px; border-radius: 50%; background: rgba(46,230,168,.12); border: 2px solid var(--green); display: grid; place-items: center; font-size: 38px; color: var(--green); margin: 0 auto 24px; animation: pop .5s ease; }
+  .success-panel .big-tick { width: 84px; height: 84px; border-radius: 50%; background: rgba(255,200,87,.12); border: 2px solid var(--yellow); display: grid; place-items: center; font-size: 38px; color: var(--yellow); margin: 0 auto 24px; animation: pop .5s ease; }
   @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+  /* combined pay button */
+  .pay-btn {
+    width: 100%; margin-top: 22px; border: none; cursor: pointer; border-radius: 14px;
+    background: var(--gradient); color: #fff; padding: 16px 20px; font-family: var(--font-body);
+    font-weight: 700; font-size: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    box-shadow: 0 10px 34px rgba(124,92,255,.4); transition: transform .2s, box-shadow .2s;
+  }
+  .pay-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 44px rgba(124,92,255,.55); }
+  .pay-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+  .pay-btn .methods { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; opacity: .95; }
+  .pay-btn .methods .m { background: rgba(255,255,255,.2); border-radius: 6px; padding: 3px 8px; letter-spacing: .02em; }
+  .loginhint { text-align: center; font-size: 13.5px; color: var(--muted); margin-top: 14px; }
+  .loginhint a { color: var(--accent-2); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -28,7 +38,7 @@
   <div class="container nav-inner">
     <a href="index.html" class="logo"><span class="logo-mark">⟳</span> Reloaded<span class="grad-text">VPS</span></a>
     <div class="nav-cta">
-      <a href="dashboard.html" class="btn btn-ghost btn-sm">← Client Area</a>
+      <a href="index.html#pricing" class="btn btn-ghost btn-sm">← Back to Plans</a>
     </div>
   </div>
 </nav>
@@ -36,12 +46,38 @@
 <div class="container" style="padding:50px 0 90px;">
   <div id="checkoutView">
     <h1 style="font-size:30px;margin-bottom:6px;">Secure <span class="grad-text">Checkout</span></h1>
-    <p class="muted" style="margin-bottom:34px;">Review your order and complete payment. Your server will enter the provisioning queue instantly.</p>
+    <p class="muted" style="margin-bottom:34px;">Create your account, review your order, then complete payment securely via Lava.</p>
 
     <div class="checkout-grid">
-      <!-- left: config + payment -->
+      <!-- left: account + config -->
       <div>
-        <div class="card">
+        <!-- account (shown only when not logged in) -->
+        <div class="card" id="accountCard">
+          <h3 class="card-title">Your Account</h3>
+          <p class="card-sub" style="margin-bottom:20px;">We'll create your client area so you can access your server and support after payment.</p>
+          <div class="field">
+            <label>Full name</label>
+            <input class="input" id="acName" placeholder="John Carter" autocomplete="name">
+          </div>
+          <div class="field">
+            <label>Email address</label>
+            <input class="input" type="email" id="acEmail" placeholder="you@example.com" autocomplete="email">
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input class="input" type="password" id="acPass" placeholder="Minimum 6 characters" autocomplete="new-password">
+          </div>
+          <div class="form-error" id="acErr"></div>
+          <p class="loginhint">Already have an account? <a href="login.html">Log in</a> and your details will fill automatically.</p>
+        </div>
+
+        <!-- logged-in banner -->
+        <div class="card" id="loggedInCard" style="display:none;">
+          <h3 class="card-title">Your Account</h3>
+          <p class="card-sub">Signed in as <b id="liName" style="color:var(--text);"></b> (<span id="liEmail"></span>). <a href="#" onclick="RVPS.logout();return false;" style="color:var(--accent-2);">Not you?</a></p>
+        </div>
+
+        <div class="card section-gap">
           <h3 class="card-title">Server Configuration</h3>
           <p class="card-sub" style="margin-bottom:20px;">You can still change your plan or billing cycle.</p>
           <div class="field">
@@ -57,36 +93,33 @@
             <input class="input" id="hostname" placeholder="my-awesome-server">
           </div>
         </div>
-
-        <div class="card section-gap">
-          <h3 class="card-title">Payment Method</h3>
-          <p class="card-sub" style="margin-bottom:20px;">Demo mode — payment is simulated instantly, no card is charged.</p>
-          <div class="pay-option selected" data-m="card"><span class="p-icon">💳</span><div><b>Credit / Debit Card</b><div class="muted small">Visa, Mastercard, Amex</div></div></div>
-          <div class="pay-option" data-m="paypal"><span class="p-icon">🅿️</span><div><b>PayPal</b><div class="muted small">Pay with your PayPal balance</div></div></div>
-          <div class="pay-option" data-m="crypto"><span class="p-icon">₿</span><div><b>Cryptocurrency</b><div class="muted small">BTC, ETH, USDT (TRC-20)</div></div></div>
-        </div>
       </div>
 
-      <!-- right: summary -->
+      <!-- right: summary + pay -->
       <div class="card" style="position:sticky;top:96px;">
         <h3 class="card-title" style="margin-bottom:18px;">Order Summary</h3>
         <div id="summary"></div>
-        <button class="btn btn-primary btn-block" style="margin-top:22px;" id="payBtn">Complete Payment 🔒</button>
-        <p class="muted small" style="text-align:center;margin-top:14px;">🔒 256-bit SSL encrypted · 48h money-back guarantee</p>
+
+        <button class="pay-btn" id="payBtn">
+          <span>Pay Securely with Lava →</span>
+          <span class="methods"><span class="m">VISA</span><span class="m">Mastercard</span><span class="m">PayPal</span></span>
+        </button>
+
+        <p class="muted small" style="text-align:center;margin-top:14px;">🔒 You'll be redirected to Lava to pay by card or PayPal. Your order is confirmed once payment is verified.</p>
       </div>
     </div>
   </div>
 
-  <!-- success -->
+  <!-- pending confirmation -->
   <div class="card success-panel" id="successView">
-    <div class="big-tick">✓</div>
-    <h2 style="margin-bottom:10px;">Payment <span class="grad-text">Successful!</span></h2>
-    <p class="muted" style="max-width:460px;margin:0 auto 8px;">Your order <b class="mono" id="okOrderId" style="color:var(--accent-2);"></b> has been received and is now in the provisioning queue.</p>
-    <p class="muted" style="max-width:460px;margin:0 auto 30px;">Your server credentials will appear in your client area as soon as our team completes setup — usually within minutes.</p>
+    <div class="big-tick">⏳</div>
+    <h2 style="margin-bottom:10px;">Order <span class="grad-text">Received!</span></h2>
+    <p class="muted" style="max-width:500px;margin:0 auto 8px;">Your order <b class="mono" id="okOrderId" style="color:var(--accent-2);"></b> has been created and an invoice is waiting in your client area.</p>
+    <p class="muted" style="max-width:500px;margin:0 auto 26px;">A payment window has opened on <b style="color:var(--text);">Lava</b>. Once you've completed payment there, our team will verify it and activate your server — you'll see the credentials appear under <b>My Services</b>.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-      <a href="dashboard.html" class="btn btn-primary">Go to Client Area →</a>
+      <a href="#" class="btn btn-primary" id="reopenLava" target="_blank" rel="noopener">Open Payment Page Again ↗</a>
+      <a href="dashboard.html" class="btn btn-ghost">Go to Client Area →</a>
       <a href="#" class="btn btn-ghost" id="okInvoiceLink">🧾 View Invoice</a>
-      <a href="index.html#pricing" class="btn btn-ghost">Order Another Server</a>
     </div>
   </div>
 </div>
@@ -95,13 +128,29 @@
 
 <script src="assets/js/app.js"></script>
 <script>
-const user = RVPS.requireAuth('client');
-if (user) {
+(() => {
+  RVPS && null;
+  let user = RVPS.currentUser();
+  // admins shouldn't checkout
+  if (user && user.role === 'admin') { location.href = 'admin.html'; return; }
+
   const qs = new URLSearchParams(location.search);
   let planId = qs.get('plan') || 'velocity';
   let cycle = +(qs.get('cycle') || 1);
   if (!RVPS.plan(planId)) planId = 'velocity';
   if (!RVPS.CYCLES[cycle]) cycle = 1;
+
+  // toggle account UI
+  function refreshAccountUI() {
+    user = RVPS.currentUser();
+    document.getElementById('accountCard').style.display = user ? 'none' : 'block';
+    document.getElementById('loggedInCard').style.display = user ? 'block' : 'none';
+    if (user) {
+      document.getElementById('liName').textContent = user.name;
+      document.getElementById('liEmail').textContent = user.email;
+    }
+  }
+  refreshAccountUI();
 
   const planSel = document.getElementById('planSel');
   const cycleSel = document.getElementById('cycleSel');
@@ -120,29 +169,48 @@ if (user) {
       <div class="summary-row"><span class="muted">Billing cycle</span><b>${RVPS.CYCLES[c]}</b></div>
       <div class="summary-row"><span class="muted">Setup fee</span><span style="color:var(--green);">FREE</span></div>
       ${save > 0 ? `<div class="summary-row"><span class="muted">You save</span><span style="color:var(--green);">-${RVPS.money(save)}</span></div>` : ''}
-      <div class="summary-row total"><span>Total due today</span><span class="grad-text">${RVPS.money(total)}</span></div>`;
+      <div class="summary-row total"><span>Total due</span><span class="grad-text">${RVPS.money(total)}</span></div>`;
   }
   planSel.onchange = cycleSel.onchange = renderSummary;
   renderSummary();
 
-  document.querySelectorAll('.pay-option').forEach(el => el.onclick = () => {
-    document.querySelectorAll('.pay-option').forEach(x => x.classList.remove('selected'));
-    el.classList.add('selected');
-  });
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
 
   document.getElementById('payBtn').onclick = function () {
-    this.disabled = true;
-    this.textContent = 'Processing payment…';
-    setTimeout(() => {
-      const order = RVPS.createOrder(user.id, planSel.value, +cycleSel.value);
-      document.getElementById('okOrderId').textContent = order.id;
-      document.getElementById('okInvoiceLink').href = 'invoice.html?order=' + order.id;
-      document.getElementById('checkoutView').style.display = 'none';
-      document.getElementById('successView').style.display = 'block';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 1400);
+    // ensure we have an account
+    let u = RVPS.currentUser();
+    if (!u) {
+      const name = document.getElementById('acName').value.trim();
+      const email = document.getElementById('acEmail').value.trim();
+      const pass = document.getElementById('acPass').value;
+      const err = document.getElementById('acErr');
+      err.style.display = 'none';
+      if (!name || !email || !pass) { err.textContent = 'Please fill in your name, email and password to continue.'; err.style.display = 'block'; return; }
+      const r = RVPS.register(name, email, pass);
+      if (!r.ok) { err.textContent = r.error + (r.error.includes('exists') ? ' Please log in instead.' : ''); err.style.display = 'block'; return; }
+      u = r.user;
+    }
+
+    // create the order as PENDING (proforma invoice) — admin confirms payment later
+    const order = RVPS.createOrder(u.id, planSel.value, +cycleSel.value, 'pending');
+
+    // open Lava payment page in a new tab
+    const lava = RVPS.LAVA_URL;
+    window.open(lava, '_blank', 'noopener');
+
+    // show pending confirmation
+    document.getElementById('okOrderId').textContent = order.id;
+    document.getElementById('okInvoiceLink').href = 'invoice.html?order=' + order.id;
+    document.getElementById('reopenLava').href = lava;
+    document.getElementById('checkoutView').style.display = 'none';
+    document.getElementById('successView').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-}
+})();
 </script>
 </body>
 </html>

@@ -90,15 +90,26 @@ const RVPS = (() => {
   }
 
   /* ---------- orders & services ---------- */
-  function createOrder(userId, planId, cycle) {
+  const LAVA_URL = 'https://app.lava.top/products/6de18591-699d-4fad-988c-d6781e00b8dc';
+  function createOrder(userId, planId, cycle, status) {
     const p = plan(planId); if (!p) return null;
     const order = {
       id: uid('ORD-'), userId, planId, cycle: +cycle,
-      amount: p.prices[cycle], status: 'paid',           // simulated instant payment
-      invoice: uid('INV-'), created: Date.now(), fulfilled: null
+      amount: p.prices[cycle],
+      status: status || 'pending',        // pending → paid (admin confirms) → completed (fulfilled)
+      paymentMethod: 'Lava', lavaUrl: LAVA_URL,
+      invoice: uid('INV-'), created: Date.now(), paidAt: null, fulfilled: null
     };
     const orders = get(K.orders, []); orders.unshift(order); set(K.orders, orders);
     return order;
+  }
+  function markOrderPaid(orderId) {
+    const all = get(K.orders, []);
+    const o = all.find(x => x.id === orderId);
+    if (!o || o.status !== 'pending') return null;
+    o.status = 'paid'; o.paidAt = Date.now();
+    set(K.orders, all);
+    return o;
   }
   const orders = () => get(K.orders, []);
   const ordersFor = userId => orders().filter(o => o.userId === userId);
@@ -188,9 +199,9 @@ const RVPS = (() => {
   seed();
 
   return {
-    PLANS, CYCLES, plan,
+    PLANS, CYCLES, plan, LAVA_URL,
     register, login, logout, currentUser, requireAuth,
-    createOrder, orders, ordersFor, services, servicesFor,
+    createOrder, markOrderPaid, orders, ordersFor, services, servicesFor,
     generateVpsDetails, fulfillOrder,
     openTicket, replyTicket, setTicketStatus, tickets, ticketsFor,
     users, money, fmtDate, fmtDateTime, esc

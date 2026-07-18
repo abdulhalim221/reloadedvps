@@ -161,16 +161,25 @@ function renderOverview() {
   const svcs = RVPS.servicesFor(user.id);
   const ords = RVPS.ordersFor(user.id);
   const tkts = RVPS.ticketsFor(user.id);
+  const awaitingPay = ords.filter(o => o.status === 'pending');
   const pending = ords.filter(o => o.status === 'paid');
   document.getElementById('stActive').textContent = svcs.filter(s => s.status === 'active').length;
-  document.getElementById('stPending').textContent = pending.length;
+  document.getElementById('stPending').textContent = awaitingPay.length + pending.length;
   document.getElementById('stTickets').textContent = tkts.filter(t => t.status !== 'closed').length;
-  document.getElementById('stSpent').textContent = RVPS.money(ords.reduce((a, o) => a + o.amount, 0));
+  document.getElementById('stSpent').textContent = RVPS.money(ords.filter(o => o.status === 'paid' || o.status === 'completed').reduce((a, o) => a + o.amount, 0));
 
   const box = document.getElementById('overviewNext');
-  if (pending.length) {
+  if (awaitingPay.length) {
+    const o = awaitingPay[0];
+    box.innerHTML = `<h3 class="card-title">⏳ Awaiting payment confirmation</h3>
+      <p class="card-sub" style="margin-bottom:16px;">Your order <b class="mono" style="color:var(--accent-2);">${o.id}</b> (${RVPS.plan(o.planId).name} — ${RVPS.CYCLES[o.cycle]}) is created but not yet paid. Complete payment via Lava, then our team verifies it and activates your server.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn btn-primary btn-sm" href="${RVPS.LAVA_URL}" target="_blank" rel="noopener">Complete Payment ↗</a>
+        <a class="btn btn-ghost btn-sm" href="invoice.html?order=${o.id}">🧾 View Invoice</a>
+      </div>`;
+  } else if (pending.length) {
     box.innerHTML = `<h3 class="card-title">⏳ Server being provisioned</h3>
-      <p class="card-sub">Your order <b class="mono" style="color:var(--accent-2);">${pending[0].id}</b> (${RVPS.plan(pending[0].planId).name} — ${RVPS.CYCLES[pending[0].cycle]}) is in the setup queue. Credentials will appear under <b>My Services</b> the moment it's ready.</p>`;
+      <p class="card-sub">Your order <b class="mono" style="color:var(--accent-2);">${pending[0].id}</b> (${RVPS.plan(pending[0].planId).name} — ${RVPS.CYCLES[pending[0].cycle]}) is paid and in the setup queue. Credentials will appear under <b>My Services</b> the moment it's ready.</p>`;
   } else if (svcs.length) {
     const s = svcs[0];
     box.innerHTML = `<h3 class="card-title">✅ Everything looks good</h3>
@@ -185,9 +194,25 @@ function renderOverview() {
 /* ---------- services ---------- */
 function renderServices() {
   const svcs = RVPS.servicesFor(user.id);
+  const awaitingPay = RVPS.ordersFor(user.id).filter(o => o.status === 'pending');
   const pending = RVPS.ordersFor(user.id).filter(o => o.status === 'paid');
   const box = document.getElementById('servicesList');
   let html = '';
+
+  awaitingPay.forEach(o => {
+    const p = RVPS.plan(o.planId);
+    html += `<div class="card svc-card">
+      <div class="svc-head">
+        <div><h3>${p.name} VPS <span class="badge badge-grey">⏳ Awaiting payment</span></h3>
+        <p class="card-sub">Order ${o.id} · ${RVPS.CYCLES[o.cycle]} · ${RVPS.money(o.amount)}</p></div>
+      </div>
+      <p class="muted small" style="margin:12px 0 14px;">Complete your payment via Lava to activate this server. Once we verify it, your credentials appear here automatically.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn btn-primary btn-sm" href="${RVPS.LAVA_URL}" target="_blank" rel="noopener">Complete Payment ↗</a>
+        <a class="btn btn-ghost btn-sm" href="invoice.html?order=${o.id}">🧾 View Invoice</a>
+      </div>
+    </div>`;
+  });
 
   pending.forEach(o => {
     const p = RVPS.plan(o.planId);
@@ -196,7 +221,7 @@ function renderServices() {
         <div><h3>${p.name} VPS <span class="badge badge-yellow">⏳ Provisioning</span></h3>
         <p class="card-sub">Order ${o.id} · ${RVPS.CYCLES[o.cycle]} · Paid ${RVPS.money(o.amount)}</p></div>
       </div>
-      <p class="muted small" style="margin-top:12px;">Our team is setting up your server. Credentials will appear here automatically.</p>
+      <p class="muted small" style="margin-top:12px;">Payment confirmed — our team is setting up your server. Credentials will appear here automatically.</p>
     </div>`;
   });
 
@@ -261,7 +286,7 @@ function renderOrders() {
       <td>${RVPS.CYCLES[o.cycle]}</td>
       <td><b>${RVPS.money(o.amount)}</b></td>
       <td class="muted">${RVPS.fmtDate(o.created)}</td>
-      <td>${o.status === 'completed' ? '<span class="badge badge-green">Completed</span>' : '<span class="badge badge-yellow">Provisioning</span>'}</td>
+      <td>${({ pending: '<span class="badge badge-grey">Awaiting payment</span>', paid: '<span class="badge badge-yellow">Provisioning</span>', completed: '<span class="badge badge-green">Completed</span>' }[o.status] || o.status)}</td>
       <td><a class="btn btn-ghost btn-sm" href="invoice.html?order=${o.id}">🧾 Invoice</a></td>
     </tr>`).join('')}</tbody></table></div>`;
 }

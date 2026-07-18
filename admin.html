@@ -46,8 +46,9 @@
     <section id="view-overview">
       <div class="portal-head"><div><h1>Admin Dashboard</h1><p>Business at a glance.</p></div></div>
       <div class="stats-grid">
-        <div class="stat"><div class="stat-label">Revenue</div><div class="stat-value grad-text" id="stRevenue">$0</div><div class="stat-hint">all time</div></div>
-        <div class="stat"><div class="stat-label">Pending Orders</div><div class="stat-value" id="stPending">0</div><div class="stat-hint">awaiting fulfillment</div></div>
+        <div class="stat"><div class="stat-label">Revenue</div><div class="stat-value grad-text" id="stRevenue">$0</div><div class="stat-hint">confirmed payments</div></div>
+        <div class="stat"><div class="stat-label">Awaiting Payment</div><div class="stat-value" id="stAwaiting">0</div><div class="stat-hint">verify in Lava</div></div>
+        <div class="stat"><div class="stat-label">To Fulfill</div><div class="stat-value" id="stPending">0</div><div class="stat-hint">paid, awaiting setup</div></div>
         <div class="stat"><div class="stat-label">Active Services</div><div class="stat-value" id="stServices">0</div><div class="stat-hint">servers delivered</div></div>
         <div class="stat"><div class="stat-label">Open Tickets</div><div class="stat-value" id="stTickets">0</div><div class="stat-hint">need a reply</div></div>
         <div class="stat"><div class="stat-label">Clients</div><div class="stat-value" id="stClients">0</div><div class="stat-hint">registered</div></div>
@@ -157,10 +158,10 @@ document.querySelectorAll('.side-link[data-view]').forEach(l =>
   l.addEventListener('click', () => showView(l.dataset.view)));
 
 function refreshBadges() {
-  const pending = RVPS.orders().filter(o => o.status === 'paid').length;
+  const actionable = RVPS.orders().filter(o => o.status === 'pending' || o.status === 'paid').length;
   const open = RVPS.tickets().filter(t => t.status === 'open').length;
   const ob = document.getElementById('ordersBadge'), tb = document.getElementById('ticketsBadge');
-  ob.style.display = pending ? 'inline-block' : 'none'; ob.textContent = pending;
+  ob.style.display = actionable ? 'inline-block' : 'none'; ob.textContent = actionable;
   tb.style.display = open ? 'inline-block' : 'none'; tb.textContent = open;
 }
 
@@ -168,9 +169,12 @@ function refreshBadges() {
 function renderOverview() {
   const ords = RVPS.orders(), svcs = RVPS.services(), tkts = RVPS.tickets();
   const clients = RVPS.users().filter(u => u.role === 'client');
+  const awaiting = ords.filter(o => o.status === 'pending');
   const pending = ords.filter(o => o.status === 'paid');
   const openT = tkts.filter(t => t.status === 'open');
-  document.getElementById('stRevenue').textContent = RVPS.money(ords.reduce((a, o) => a + o.amount, 0));
+  const revenue = ords.filter(o => o.status === 'paid' || o.status === 'completed').reduce((a, o) => a + o.amount, 0);
+  document.getElementById('stRevenue').textContent = RVPS.money(revenue);
+  document.getElementById('stAwaiting').textContent = awaiting.length;
   document.getElementById('stPending').textContent = pending.length;
   document.getElementById('stServices').textContent = svcs.length;
   document.getElementById('stTickets').textContent = openT.length;
@@ -178,14 +182,20 @@ function renderOverview() {
 
   const box = document.getElementById('actionNeeded');
   let html = '<h3 class="card-title">Action needed</h3>';
-  if (!pending.length && !openT.length) {
-    html += '<p class="card-sub">🎉 All clear — no pending orders and no unanswered tickets.</p>';
+  if (!awaiting.length && !pending.length && !openT.length) {
+    html += '<p class="card-sub">🎉 All clear — no orders to action and no unanswered tickets.</p>';
   } else {
     html += '<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px;">';
+    awaiting.forEach(o => {
+      const u = userById(o.userId);
+      html += `<div class="flex-between" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:13px 18px;">
+        <span class="small">⏳ <b>${o.id}</b> — ${RVPS.plan(o.planId).name} (${RVPS.CYCLES[o.cycle]}) · ${u ? RVPS.esc(u.name) : '?'} · <b>${RVPS.money(o.amount)}</b> · <span class="muted">awaiting payment</span></span>
+        <button class="btn btn-primary btn-sm" onclick="confirmPaid('${o.id}')">✓ Mark as Paid</button></div>`;
+    });
     pending.forEach(o => {
       const u = userById(o.userId);
       html += `<div class="flex-between" style="background:rgba(255,200,87,.06);border:1px solid rgba(255,200,87,.25);border-radius:12px;padding:13px 18px;">
-        <span class="small">📦 <b>${o.id}</b> — ${RVPS.plan(o.planId).name} (${RVPS.CYCLES[o.cycle]}) · ${u ? RVPS.esc(u.name) : '?'} · <b>${RVPS.money(o.amount)}</b></span>
+        <span class="small">📦 <b>${o.id}</b> — ${RVPS.plan(o.planId).name} (${RVPS.CYCLES[o.cycle]}) · ${u ? RVPS.esc(u.name) : '?'} · <b>${RVPS.money(o.amount)}</b> · <span class="muted">paid</span></span>
         <button class="btn btn-primary btn-sm" onclick="openFulfill('${o.id}')">Fulfill Now →</button></div>`;
     });
     openT.forEach(t => {
@@ -214,10 +224,28 @@ function renderOrders() {
         <td>${RVPS.CYCLES[o.cycle]}</td>
         <td><b>${RVPS.money(o.amount)}</b></td>
         <td class="muted">${RVPS.fmtDate(o.created)}</td>
-        <td>${o.status === 'completed' ? '<span class="badge badge-green">Fulfilled</span>' : '<span class="badge badge-yellow">Awaiting fulfillment</span>'}</td>
-        <td style="white-space:nowrap;">${o.status === 'paid' ? `<button class="btn btn-primary btn-sm" onclick="openFulfill('${o.id}')">Fulfill →</button> ` : ''}<a class="btn btn-ghost btn-sm" href="invoice.html?order=${o.id}">🧾</a></td>
+        <td>${orderStatusBadge(o.status)}</td>
+        <td style="white-space:nowrap;">${orderAction(o)}<a class="btn btn-ghost btn-sm" href="invoice.html?order=${o.id}">🧾</a></td>
       </tr>`;
     }).join('')}</tbody></table></div>`;
+}
+const orderStatusBadge = s => ({
+  pending:   '<span class="badge badge-grey">⏳ Awaiting payment</span>',
+  paid:      '<span class="badge badge-yellow">💰 Paid — awaiting fulfillment</span>',
+  completed: '<span class="badge badge-green">✔ Fulfilled</span>'
+}[s] || s);
+function orderAction(o) {
+  if (o.status === 'pending') return `<button class="btn btn-primary btn-sm" onclick="confirmPaid('${o.id}')">✓ Mark as Paid</button> `;
+  if (o.status === 'paid')    return `<button class="btn btn-primary btn-sm" onclick="openFulfill('${o.id}')">Fulfill →</button> `;
+  return '';
+}
+function confirmPaid(orderId) {
+  const o = RVPS.orders().find(x => x.id === orderId); if (!o) return;
+  const u = userById(o.userId);
+  if (!confirm(`Confirm you have received payment for order ${o.id}?\n\n${RVPS.plan(o.planId).name} · ${RVPS.CYCLES[o.cycle]} · ${RVPS.money(o.amount)}\nClient: ${u ? u.name + ' (' + u.email + ')' : '?'}\n\nOnly do this after verifying the payment in your Lava dashboard.`)) return;
+  RVPS.markOrderPaid(orderId);
+  toast(`✓ ${o.id} marked as paid — ready to fulfill`);
+  renderOverview(); renderOrders(); refreshBadges();
 }
 
 /* ---------- fulfill flow ---------- */

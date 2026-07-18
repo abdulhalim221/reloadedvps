@@ -113,18 +113,23 @@
   const listPrice = p.prices[1] * order.cycle;
   const discount = listPrice - order.amount;
   const service = RVPS.services().find(s => s.orderId === order.id);
+  const isPaid = order.status === 'paid' || order.status === 'completed';
 
   document.getElementById('paper').innerHTML = `
-    ${order.status !== 'unpaid' ? '<div class="paid-stamp">Paid</div>' : ''}
+    ${isPaid
+      ? '<div class="paid-stamp">Paid</div>'
+      : '<div class="paid-stamp" style="color:var(--yellow);border-color:var(--yellow);">Unpaid</div>'}
     <div class="inv-top">
       <div>
-        <div class="inv-title">INVOICE</div>
+        <div class="inv-title">${isPaid ? 'INVOICE' : 'PROFORMA INVOICE'}</div>
         <div class="inv-no mono">${order.invoice}</div>
       </div>
       <div class="inv-meta">
         <div><b>Issue date:</b> ${RVPS.fmtDate(order.created)}</div>
         <div><b>Order:</b> <span class="mono">${order.id}</span></div>
-        <div><b>Status:</b> <span class="badge badge-green">Paid ✓</span></div>
+        <div><b>Status:</b> ${isPaid
+          ? '<span class="badge badge-green">Paid ✓</span>'
+          : '<span class="badge badge-yellow">Awaiting payment</span>'}</div>
         ${order.fulfilled ? `<div><b>Delivered:</b> ${RVPS.fmtDate(order.fulfilled)}</div>` : ''}
       </div>
     </div>
@@ -168,12 +173,23 @@
       <div class="trow"><span>Subtotal</span><span>${RVPS.money(listPrice)}</span></div>
       ${discount > 0 ? `<div class="trow"><span>Cycle discount (${cycleLabel})</span><span style="color:var(--green);">−${RVPS.money(discount)}</span></div>` : ''}
       <div class="trow"><span>Tax</span><span>$0</span></div>
-      <div class="trow grand"><span>Total paid</span><span class="grad-text">${RVPS.money(order.amount)}</span></div>
+      <div class="trow grand"><span>${isPaid ? 'Total paid' : 'Total due'}</span><span class="grad-text">${RVPS.money(order.amount)}</span></div>
     </div>
 
+    ${!isPaid ? `
+    <div style="margin-top:26px;background:rgba(255,200,87,.06);border:1px solid rgba(255,200,87,.3);border-radius:14px;padding:18px 22px;">
+      <div style="color:var(--yellow);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">💳 Payment Instructions</div>
+      <div class="small muted" style="line-height:1.9;">
+        Please complete payment for this order via <b style="color:var(--text);">Lava</b> (card, Visa, Mastercard or PayPal).
+        Once your payment is verified by our team, your server is provisioned and this invoice is marked paid.<br>
+        <a href="${RVPS.LAVA_URL}" target="_blank" rel="noopener" class="btn btn-primary btn-sm" style="margin-top:12px;">Pay Now via Lava ↗</a>
+      </div>
+    </div>` : ''}
+
     <div class="inv-foot">
-      <b style="color:var(--text);">Thank you for your business!</b><br>
-      This invoice was paid in full at checkout. Your service ${service ? `<span class="mono">${service.id}</span> is active and expires on <b style="color:var(--text);">${RVPS.fmtDate(service.expires)}</b>.` : 'is being provisioned and will be delivered to your client area shortly.'}<br>
+      ${isPaid
+        ? `<b style="color:var(--text);">Thank you for your business!</b><br>This invoice has been paid in full. Your service ${service ? `<span class="mono">${service.id}</span> is active and expires on <b style="color:var(--text);">${RVPS.fmtDate(service.expires)}</b>.` : 'is being provisioned and will be delivered to your client area shortly.'}`
+        : `<b style="color:var(--text);">This is a proforma invoice awaiting payment.</b><br>Your server will be provisioned as soon as payment is completed via Lava and verified by our team.`}<br>
       Questions about this invoice? Open a support ticket from your client area — we reply within minutes.
     </div>`;
 })();
